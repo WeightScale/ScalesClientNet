@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <usb-device vendor-id="9025"/><!-- Vendor ID of Arduino -->
+    <usb-device vendor-id="1659"/><!--Prolific Technology, Inc.-->
+    <usb-device vendor-id="1027"/><!--Future Technology Devices International, Ltd (FTDI)-->
+    <usb-device vendor-id="1003"/><!--Atmel Corp.-->
+    <usb-device vendor-id="17224"/><!--WinChipHead-->
+    <usb-device vendor-id="6790"/><!--QinHeng Electronics-->
+    <usb-device vendor-id="1137"/><!--Philips (or NXP)-->
+    <usb-device vendor-id="4292"/><!--Cygnal Integrated Products, Inc.-->
+
+    <usb-accessory vendor-id="9025"/><!-- Vendor ID of Arduino -->
+    <usb-accessory vendor-id="1659"/><!--Prolific Technology, Inc.-->
+    <usb-accessory vendor-id="1027"/><!--Future Technology Devices International, Ltd (FTDI)-->
+    <usb-accessory vendor-id="1003"/><!--Atmel Corp.-->
+    <usb-accessory vendor-id="17224"/><!--WinChipHead-->
+    <usb-accessory vendor-id="6790"/><!--QinHeng Electronics-->
+    <usb-accessory vendor-id="1137"/><!--Philips (or NXP)-->
+    <usb-accessory vendor-id="4292"/>
+
+</resources>

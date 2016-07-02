@@ -1,0 +1,113 @@
+<resources>
+
+    <style name="titleTextStyle">
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">@style/TextAppearanceWindowTitle</item>
+        <item name="android:shadowColor">#BB000000</item>
+        <item name="android:shadowRadius">2.75</item>
+    </style>
+
+    <style name="TextAppearanceWindowTitle">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="CustomButton">
+        <item name="android:background">@drawable/design</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="CustomButton1">
+        <item name="android:background">@drawable/design1</item>
+        <item name="android:textColor">@drawable/text_button_selector</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CustomButtonImage">
+        <item name="android:background">@drawable/image_selector</item>
+        <item name="android:layout_marginLeft">@dimen/corners3</item>
+        <!--<item name="android:layout_marginTop">@dimen/corners</item>-->
+        <item name="android:layout_marginRight">@dimen/corners3</item>
+        <!--<item name="android:layout_marginBottom">@dimen/corners</item>-->
+        <item name="android:clickable">true</item>
+        <item name="android:paddingTop">@dimen/corners</item>
+        <item name="android:paddingBottom">@dimen/corners</item>
+    </style>
+
+    <style name="CustomImageButton">
+        <item name="android:background">@drawable/design</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="CustomSpinner" parent="android:Widget.Spinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:clickable">true</item>
+        <item name="android:layout_width">wrap_content</item>
+    </style>
+
+    <style name="CustomTabWidget" parent="@android:style/Widget.TabWidget">
+        <item name="android:textAppearance">@style/CustomTabWidgetText</item>
+    </style>
+
+    <style name="CustomTabWidgetText" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:textSize">@dimen/text_small</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:padding">@dimen/corners</item>
+        <!--<item name="android:layout_margin">@dimen/padding</item>-->
+    </style>
+
+    <style name="CustomProgressDialogStyle">
+        <item name="android:bottomBright">@color/background1</item>
+        <item name="android:bottomDark">@color/background1</item>
+        <item name="android:bottomMedium">@color/background1</item>
+        <item name="android:centerBright">@color/background1</item>
+        <item name="android:centerDark">@color/background1</item>
+        <item name="android:centerMedium">@color/background1</item>
+        <item name="android:fullBright">@color/background1</item>
+        <item name="android:fullDark">@color/background1</item>
+        <item name="android:topBright">@color/background1</item>
+        <item name="android:topDark">@color/background1</item>
+    </style>
+
+    <style name="NumberPickerTheme.Light" parent="android:Theme.Light">
+        <item name="numberPickerStyle">@style/NPWidget.Holo.Light.NumberPicker</item>
+    </style>
+
+    <style name="NPWidget">
+        <item name="android:textAppearance">?android:attr/textAppearance</item>
+    </style>
+
+    <style name="NPWidget.NumberPicker">
+        <item name="android:orientation">vertical</item>
+        <item name="android:fadingEdge">vertical</item>
+        <item name="android:fadingEdgeLength">50dip</item>
+    </style>
+
+    <style name="NPWidget.Holo.NumberPicker" parent="NPWidget.NumberPicker">
+        <item name="solidColor">@android:color/transparent</item>
+        <item name="selectionDivider">@drawable/np_numberpicker_selection_divider</item>
+        <item name="selectionDividerHeight">2dip</item>
+        <item name="internalLayout">@layout/number_picker_with_selector_wheel</item>
+        <item name="internalMinWidth">64dip</item>
+        <item name="internalMaxHeight">180dip</item>
+        <item name="virtualButtonPressedDrawable">@drawable/item_background_holo_dark</item>
+    </style>
+
+    <style name="NPWidget.Holo.Light.NumberPicker" parent="NPWidget.Holo.NumberPicker">
+        <item name="virtualButtonPressedDrawable">@drawable/item_background_holo_light</item>
+    </style>
+
+    <style name="PreferencesScreenStyle" >
+        <item name="android:layout">@layout/preference_category</item>
+    </style>
+
+    <style name="PreferencesEditTextStyle" >
+        <item name="android:layout">@layout/preference_category</item>
+    </style>
+
+</resources>

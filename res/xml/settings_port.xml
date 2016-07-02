@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:title="Скорость" android:summary="Скорость передачи данных"/>
+    <MultiSelectListPreference android:title="ФОРМАТ ДАННЫХ" android:summary="Формат данных"/>
+</PreferenceScreen>

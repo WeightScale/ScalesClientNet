@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/settings_port">
+        <PreferenceScreen android:title="УСТАНОВКИ COM ПОРТА" android:summary="Настройки COM порта для связи.">
+            <com.kostya.scales_client_net.settings.DialogSpeedPort
+                    android:key="@string/KEY_SPEED_PORT"
+                    android:title="Скорость:"
+                    android:summary="Скорость передачи данных."
+                    android:defaultValue="9600"
+                    android:numeric="signed"
+                    android:inputType="number" />
+            <ListPreference android:key="@string/KEY_SERIAL_FRAME"
+                            android:title="Формат:"
+                            android:summary="Формат кадра в битах"
+                            android:defaultValue="8"
+                            android:entries="@array/array_bits"
+                            android:entryValues="@array/array_bits"/>
+            <ListPreference android:key="@string/KEY_PARITY_BIT"
+                            android:title="Бит четности:"
+                            android:summary="Бит проверки на четность"
+                            android:defaultValue="none"
+                            android:entries="@array/array_parity_bit"
+                            android:entryValues="@array/array_parity_bit"/>
+            <ListPreference android:key="@string/KEY_STOP_BIT"
+                            android:title="Стоп бит:"
+                            android:summary="Стоповый бит."
+                            android:defaultValue="1"
+                            android:entries="@array/array_stop_bits"
+                            android:entryValues="@array/array_stop_bits"/>
+            <ListPreference android:key="@string/KEY_FLOW_CONTROL"
+                            android:title="Флов контроль:"
+                            android:summary="Флов контроль."
+                            android:defaultValue="OFF"
+                            android:entries="@array/array_flow_control"
+                            android:entryValues="@array/array_flow_control" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Настройки WiFi">
+        <PreferenceScreen android:title="УСТАНОВКИ СЕТИ WIFI. " android:summary="Установки сети в которой должен работать сервис.">
+            <PreferenceCategory android:title="Конфигурация из списка">
+                <com.kostya.scales_client_net.settings.ListPreferenceWifi
+                        android:summary="Сеть по умолчанию из списка сохраненных.
+                        Выбора конкретной сети из списка сохраненных кофигураций если есть.Если сети нет в списке создайте имя сети и ключ."
+                        android:key="@string/KEY_WIFI_DEFAULT"/>
+            </PreferenceCategory>
+            <PreferenceCategory android:title="Ручной ввод сети WiFi">
+                <EditTextPreference android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
+                <EditTextPreference android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
+            </PreferenceCategory>
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Отправки данных">
+        <PreferenceScreen android:title="НАСТРОЙКИ1 GOOGLE DISK" android:summary="Настройки для отправки данных через интернет на Google disk.">
+            <PreferenceCategory android:title="Настройки Google SpreadSheet">
+                <EditTextPreference android:title="Таблица:" android:summary="@string/TEXT_MESSAGE7"
+                                    android:key="@string/KEY_SHEET" android:gravity="right" android:inputType="text"/>
+                <EditTextPreference android:title="@string/User_google_disk" android:summary="Account Google (Необжодимо создать в Google)." android:key="@string/KEY_USER" android:gravity="right"
+                                    android:inputType="textEmailAddress"/>
+                <EditTextPreference android:title="@string/Password_google_account" android:summary="Password account Google (должен создан в Google)." android:gravity="right"
+                                    android:key="@string/KEY_PASSWORD" android:inputType="textPassword"/>
+            </PreferenceCategory>
+            <PreferenceCategory android:title="Настройки Google Forms">
+                <Preference android:key="@string/KEY_PATH_FORM" android:title="ФАЙЛ ФОРМЫ"
+                            android:summary="Выбор файла для сохранения настроек формы. Сначала создается форма в Google Disk - Form. Создается фаил тип xml согластно инструкции."/>
+            </PreferenceCategory>
+        </PreferenceScreen>
+        <PreferenceScreen android:title="НАСТРОЙКИ ДЛЯ СООБЩЕНИЙ" android:summary="Настройки для отправки весовых данных сообщением через СМС">
+            <EditTextPreference android:title="ТЕЛЕФОН" android:summary="Номер телефона для смс. Формат +38" android:key="@string/KEY_PHONE"
+                                android:gravity="right" android:inputType="phone"/>
+        </PreferenceScreen>
+        <Preference android:title="НАСТРОЙКА ОТСЫЛАТЕЛЯ" android:summary="Выбор куда отправлять данные." android:key="@string/KEY_SENDER"/>
+
+        <CheckBoxPreference android:enabled="true" android:title="МОБИЛЬНЫЙ ИНТЕРНЕТ" android:summary="Использовать мобильный интернет." android:key="@string/KEY_MOBIL_INTERNET" android:defaultValue="false"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Настройки доступа">
+        <EditTextPreference android:key="@string/KEY_SERVICE_COD" android:gravity="right" android:inputType="numberPassword" android:title="КОД ДОСТУПА" android:summary="Выберите чтобы сохранить новый код для доступа к административным настройкам."/>
+    </PreferenceCategory>
+</PreferenceScreen>
