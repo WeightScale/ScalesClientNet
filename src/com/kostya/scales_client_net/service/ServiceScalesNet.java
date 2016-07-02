@@ -50,7 +50,7 @@ public class ServiceScalesNet extends Service{
     private EventsTable eventsTable;
     private int usbDeviceId;
     private static final String TAG = ServiceScalesNet.class.getName();
-    public static final String ACTION_USB_PERMISSION = "com.kostya.scaleswifinet.USB_PERMISSION";
+    public static final String ACTION_USB_PERMISSION = "com.kostya.scales_client_net.USB_PERMISSION";
     public static final int DEFAULT_NOTIFICATION_ID = 101;
 
     public interface OnRegisterServiceListener{

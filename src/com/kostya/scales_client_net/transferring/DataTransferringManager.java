@@ -23,7 +23,7 @@ public class DataTransferringManager {
     public static final int SERVICE_INFO_PORT = 8856;//8856
     public static final String SERVICE_INFO_TYPE_SCALES = "_scales._tcp.local.";
     public static final String SERVICE_INFO_TYPE_SETTINGS = "_settings._tcp.local.";
-    public static final String SERVICE_INFO_NAME = "scales_wifi_service";
+    public static final String SERVICE_INFO_NAME = "scales_client_service";
     private static final String SERVICE_INFO_PROPERTY_IP_VERSION = "ipv4";
     private static final String SERVICE_INFO_PROPERTY_DEVICE = "device";
     private static final String TAG = DataTransferringManager.class.getName();

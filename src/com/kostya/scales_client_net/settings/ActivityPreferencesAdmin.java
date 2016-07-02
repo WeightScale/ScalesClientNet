@@ -45,11 +45,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
     private static boolean flag_restore;
     private static final String TAG = ActivityPreferencesAdmin.class.getName();
     private static final String superCode = "343434";
-    public static final String ACTION_PREFERENCE_ADMIN = "com.kostya.scaleswifinet.settings.ACTION_PREFERENCE_ADMIN";
-    public static final String EXTRA_BUNDLE_WIFI = "com.kostya.scaleswifinet.settings.EXTRA_BUNDLE_WIFI";
-    public static final String EXTRA_BUNDLE_USB = "com.kostya.scaleswifinet.settings.EXTRA_BUNDLE_USB";
-    public static final String KEY_SSID = "com.kostya.scaleswifinet.settings.KEY_SSID";
-    public static final String KEY_PASS = "com.kostya.scaleswifinet.settings.KEY_PASS";
+    public static final String ACTION_PREFERENCE_ADMIN = "com.kostya.scales_client_net.settings.ACTION_PREFERENCE_ADMIN";
+    public static final String EXTRA_BUNDLE_WIFI = "com.kostya.scales_client_net.settings.EXTRA_BUNDLE_WIFI";
+    public static final String EXTRA_BUNDLE_USB = "com.kostya.scales_client_net.settings.EXTRA_BUNDLE_USB";
+    public static final String KEY_SSID = "com.kostya.scales_client_net.settings.KEY_SSID";
+    public static final String KEY_PASS = "com.kostya.scales_client_net.settings.KEY_PASS";
 
     public enum EnumPreferenceAdmin{
         SPEED_PORT(R.string.KEY_SPEED_PORT){
@@ -166,6 +166,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
                 name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_SSID));
+                name.setEnabled(false);
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
@@ -194,6 +195,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
                 name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_KEY));
+                name.setEnabled(false);
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {

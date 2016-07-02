@@ -22,8 +22,8 @@ public class IntentServiceSpreadSheet extends IntentService {
     private EventsTable eventsTable;
     private String account;
     HashMap<String, ContentValues> mapEvents;
-    public static final String EXTRA_ACCOUNT = "com.kostya.scaleswifinet.task.EXTRA_ACCOUNT";
-    public static final String EXTRA_MAP_EVENTS = "com.kostya.scaleswifinet.task.EXTRA_MAP_EVENTS";
+    public static final String EXTRA_ACCOUNT = "com.kostya.scales_client_net.task.EXTRA_ACCOUNT";
+    public static final String EXTRA_MAP_EVENTS = "com.kostya.scales_client_net.task.EXTRA_MAP_EVENTS";
 
     public IntentServiceSpreadSheet(String name) {
         super(name);

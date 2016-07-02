@@ -21,12 +21,12 @@ import java.util.*;
  * @author Kostya  on 28.06.2016.
  */
 public class IntentServiceEmail extends IntentService {
-    public static final String EXTRA_ADDRESS_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_ADDRESS_EMAIL";
-    public static final String EXTRA_TEXT_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_TEXT_EMAIL";
-    private static final String EXTRA_SUBJECT_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_SUBJECT_EMAIL";
-    private static final String EXTRA_PERSONAL_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_PERSONAL_EMAIL";
-    private static final String EXTRA_USER_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_USER_EMAIL";
-    private static final String EXTRA_PASSWORD_EMAIL = "com.kostya.scaleswifinet.task.EXTRA_PASSWORD_EMAIL";
+    public static final String EXTRA_ADDRESS_EMAIL = "com.kostya.scales_client_net.task.EXTRA_ADDRESS_EMAIL";
+    public static final String EXTRA_TEXT_EMAIL = "com.kostya.scales_client_net.task.EXTRA_TEXT_EMAIL";
+    private static final String EXTRA_SUBJECT_EMAIL = "com.kostya.scales_client_net.task.EXTRA_SUBJECT_EMAIL";
+    private static final String EXTRA_PERSONAL_EMAIL = "com.kostya.scales_client_net.task.EXTRA_PERSONAL_EMAIL";
+    private static final String EXTRA_USER_EMAIL = "com.kostya.scales_client_net.task.EXTRA_USER_EMAIL";
+    private static final String EXTRA_PASSWORD_EMAIL = "com.kostya.scales_client_net.task.EXTRA_PASSWORD_EMAIL";
 
     public IntentServiceEmail(String name) {
         super(name);
@@ -97,7 +97,7 @@ public class IntentServiceEmail extends IntentService {
 
         /**
          * Отправляем письмо с приклепленным файлом.
-         * Добавляем путь файла при создании обьекта письма. {@link com.kostya.scaleswifinet.task.IntentServiceEmail.MailObject#addFile(String)}.
+         * Добавляем путь файла при создании обьекта письма. {@link com.kostya.scales_client_net.task.IntentServiceEmail.MailObject#addFile(String)}.
          *
          * @throws MessagingException           Ошибка.
          * @throws UnsupportedEncodingException Ошибка.

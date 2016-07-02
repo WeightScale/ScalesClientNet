@@ -65,7 +65,7 @@ public class SystemTable {
             + KEY_DATA + " text );";
 
 
-    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesWiFiNetProvider.AUTHORITY + '/' + TABLE);
+    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesClientNetProvider.AUTHORITY + '/' + TABLE);
 
     /** Конструктор класса.
      * @param context Контекст.

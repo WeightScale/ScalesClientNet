@@ -41,7 +41,7 @@ public class TaskTable {
             + KEY_DATA4 + " text,"
             + KEY_NUM_ERROR + " integer );";
 
-    public static final Uri CONTENT_URI = Uri.parse("content://" + ScalesWiFiNetProvider.AUTHORITY + '/' + TABLE);
+    public static final Uri CONTENT_URI = Uri.parse("content://" + ScalesClientNetProvider.AUTHORITY + '/' + TABLE);
 
     /** Энумератор типа задачи. */
     public enum TaskType {

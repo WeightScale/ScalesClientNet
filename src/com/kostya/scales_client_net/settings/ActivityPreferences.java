@@ -56,7 +56,7 @@ public class ActivityPreferences extends PreferenceActivity implements SharedPre
 
         String action = getIntent().getAction();
         //Manage single fragment with action parameter
-        if (action != null && "com.kostya.scaleswifinet.settings.GENERAL".equals(action)) {
+        if (action != null && "com.kostya.scales_client_net.settings.GENERAL".equals(action)) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
                 addPreferencesFromResource(R.xml.preferences);
                 process();

@@ -24,8 +24,8 @@ public class Internet {
     /** Слушатель менеджера телефона */
     private PhoneStateListener phoneStateListener;
 
-    public static final String INTERNET_CONNECT = "com.kostya.scaleswifinet.INTERNET_CONNECT";
-    public static final String INTERNET_DISCONNECT = "com.kostya.scaleswifinet.INTERNET_DISCONNECT";
+    public static final String INTERNET_CONNECT = "com.kostya.scales_client_net.INTERNET_CONNECT";
+    public static final String INTERNET_DISCONNECT = "com.kostya.scales_client_net.INTERNET_DISCONNECT";
 
     public Internet(Context c) {
         mContext = c;

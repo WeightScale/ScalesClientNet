@@ -26,6 +26,7 @@ public class WifiBaseManager  {
     private final OnWifiConnectListener onWifiConnectListener;
     private final WifiManager wifiManager;
     private String ssid = "", pass = "";
+    private int netConfigId;
     private static final String TAG = WifiBaseManager.class.getName();
     private static final String PSK = "PSK";
     private static final String WEP = "WEP";
@@ -50,7 +51,7 @@ public class WifiBaseManager  {
         try {
             ssid = systemTable.getProperty(SystemTable.Name.WIFI_SSID);
             pass = systemTable.getProperty(SystemTable.Name.WIFI_KEY);
-            //int storeIdNet = Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT));
+            netConfigId = Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT));
         } catch (Exception e) {
             eventsTable.insertNewEvent(e.getMessage(), EventsTable.Event.WIFI_EVENT);
         }
@@ -144,22 +145,37 @@ public class WifiBaseManager  {
                             wifiManager.saveConfiguration();
                         }
                     }
-                    conf.SSID = '"' + ssid + '"';
-                    switch (security) {
-                        case WEP:
-                            conf.wepKeys[0] = '"' + pass + '"';
-                            conf.wepTxKeyIndex = 0;
-                            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                            conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-                            break;
-                        case PSK:
-                            conf.preSharedKey = '"' + pass + '"';
-                            break;
-                        case OPEN:
-                            conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                            break;
-                        default:
+                    int netId;
+                    if(isConfigNet){
+                        netId =conf.networkId;
+                    }else {
+                        conf.SSID = '"' + ssid + '"';
+                        /*switch (security) {
+                            case WEP:
+                                conf.wepKeys[0] = '"' + pass + '"';
+                                conf.wepTxKeyIndex = 0;
+                                conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                                conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                                break;
+                            case PSK:
+                                conf.preSharedKey = '"' + pass + '"';
+                                break;
+                            case OPEN:
+                                conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                                break;
+                            default:
+                        }*/
+                        netId = wifiManager.addNetwork(conf);
+                        /** Ошибка добавления конфигурации сети. */
+                        if(netId == -1)
+                            return;
+                        /** Сохраняем конфиругацию и перезапускаем сеть. */
+                        wifiManager.saveConfiguration();
+                        SystemTable systemTable = new SystemTable(context);
+                        systemTable.updateEntry(SystemTable.Name.WIFI_SSID, conf.SSID);
+                        systemTable.updateEntry(SystemTable.Name.WIFI_DEFAULT, String.valueOf(netId));
                     }
+
                     /** Удаляем регистрацию приемника. */
                     try {context.unregisterReceiver(connectionReceiver);} catch (Exception e) {} // do nothing
                     /** Регестрируем приемник заново. */
@@ -170,21 +186,21 @@ public class WifiBaseManager  {
                     intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
                     context.registerReceiver(connectionReceiver, intentFilter);
                     /** Если нет то добавляем конкретную сеть в список конфигураций. */
-                    if(!isConfigNet){
-                        conf.networkId = wifiManager.addNetwork(conf);
+                    /*if(!isConfigNet){
+
                     }
-                    int netId = wifiManager.updateNetwork(conf);
-                    /** Ошибка добавления конфигурации сети. */
-                    if(netId == -1)
-                        return;
-                    /** Сохраняем конфиругацию и перезапускаем сеть. */
-                    wifiManager.saveConfiguration();
+                    int netId = wifiManager.updateNetwork(conf);*/
+
+
                     wifiManager.disconnect();
                     wifiManager.enableNetwork(netId, true);
                     wifiManager.reconnect();
                     /** Удаляем регистрацию приемника. */
                     context.unregisterReceiver(this);
+                }else{
+                    //todo что то сделать если нет конкретной сети открыть настройки для выбора
                 }
+
             } catch (Exception e) {
                 eventsTable.insertNewEvent(e.getMessage(), EventsTable.Event.WIFI_EVENT);
             }

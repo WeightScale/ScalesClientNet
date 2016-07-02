@@ -93,7 +93,7 @@ public class EventsTable {
             + KEY_VISIBILITY + " integer );";
 
 
-    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesWiFiNetProvider.AUTHORITY + '/' + TABLE);
+    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesClientNetProvider.AUTHORITY + '/' + TABLE);
 
     public EventsTable(Context context) {
         mContext = context;

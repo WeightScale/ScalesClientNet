@@ -3,19 +3,19 @@
 
     <PreferenceCategory  android:title="Настройки общии" >
         <Preference android:title="Для пользователя" android:summary="Настройки для пользователя">
-            <intent android:action="com.kostya.scaleswifinet.settings.GENERAL"/>
+            <intent android:action="com.kostya.scales_client_net.settings.GENERAL"/>
         </Preference>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Настройки админ">
         <Preference android:title="Для администратора" android:summary="Настройки для опытного пользователя">
-            <intent android:action="com.kostya.scaleswifinet.settings.ADMIN"/>
+            <intent android:action="com.kostya.scales_client_net.settings.ADMIN"/>
         </Preference>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="О программе" >
         <Preference android:title="О программе" android:summary="Информация о программе">
-            <intent android:action="com.kostya.scaleswifinet.settings.ABOUT"/>
+            <intent android:action="com.kostya.scales_client_net.settings.ABOUT"/>
         </Preference>
     </PreferenceCategory>
 

@@ -168,7 +168,7 @@ public abstract class GoogleSpreadsheets extends AsyncTask<Void, Void, String[]>
 
     protected Intent makeCallback() {
         Intent intent = new Intent();
-        intent.setAction("com.victjava.scales.CallbackReceiver");
+        intent.setAction("com.kostya.scales_client_net.CallbackReceiver");
         //intent.putExtra(HelloActivity.EXTRA_ACCOUNTNAME, accountName);
         //intent.putExtra(HelloActivity.TYPE_KEY, HelloActivity.Type.BACKGROUND.name());
         return intent;

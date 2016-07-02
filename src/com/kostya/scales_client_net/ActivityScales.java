@@ -23,7 +23,7 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     Receiver receiver;
     private static final int FILE_SELECT_CODE = 10;
     private static  final String TAG = ActivityScales.class.getName();
-    public static final String WEIGHT = "com.kostya.scaleswifinet.WEIGHT";
+    public static final String WEIGHT = "com.kostya.scales_client_net.WEIGHT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

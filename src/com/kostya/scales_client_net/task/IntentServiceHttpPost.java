@@ -46,9 +46,9 @@ public class IntentServiceHttpPost extends IntentService{
     public static final String filePath = "forms/kolosok.xml";
     public static final String nameForm = "EventsForm";
     public static final String TAG = IntentServiceHttpPost.class.getName();
-    public static final String EXTRA_LIST_VALUE_PAIR = "com.kostya.scaleswifinet.task.EXTRA_LIST_VALUE_PAIR";
-    public static final String EXTRA_HTTP_PATH = "com.kostya.scaleswifinet.task.EXTRA_HTTP_PATH";
-    public static final String ACTION_EVENT_TABLE = "com.kostya.scaleswifinet.task.ACTION_EVENT_TABLE";
+    public static final String EXTRA_LIST_VALUE_PAIR = "com.kostya.scales_client_net.task.EXTRA_LIST_VALUE_PAIR";
+    public static final String EXTRA_HTTP_PATH = "com.kostya.scales_client_net.task.EXTRA_HTTP_PATH";
+    public static final String ACTION_EVENT_TABLE = "com.kostya.scales_client_net.task.ACTION_EVENT_TABLE";
 
     public IntentServiceHttpPost(String name) { super(name);  }
     public IntentServiceHttpPost() { super(IntentServiceHttpPost.class.getName());  }

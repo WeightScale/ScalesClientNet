@@ -45,7 +45,7 @@ public class SenderTable {
             + KEY_DATA3 + " text, "
             + KEY_SYS + " integer );";
 
-    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesWiFiNetProvider.AUTHORITY + '/' + TABLE);
+    private static final Uri CONTENT_URI = Uri.parse("content://" + ScalesClientNetProvider.AUTHORITY + '/' + TABLE);
 
     public SenderTable(Context context) {
         contentResolver = context.getContentResolver();

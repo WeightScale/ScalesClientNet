@@ -1,13 +1,16 @@
 package com.kostya.scales_client_net.settings;
 
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.preference.ListPreference;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -97,12 +100,17 @@ public class ListPreferenceWifi extends ListPreference {
                     }*/
                 ListPreferenceWifi.this.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
 
-
                 dialog.dismiss();
             }
         } );
 
-        builder.setPositiveButton( null, null );
+        builder.setPositiveButton("Найти", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                getContext().startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                dialogInterface.dismiss();
+            }
+        });
 
         //setDefaultValue(mClickedDialogEntryIndex);
     }
