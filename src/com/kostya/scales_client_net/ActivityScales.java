@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
+import com.kostya.scales_client_net.service.ServiceScalesNet;
 import com.kostya.scales_client_net.settings.ActivityPreferences;
 
 /**
@@ -53,6 +54,8 @@ public class ActivityScales extends Activity implements View.OnClickListener{
         IntentFilter filter = new IntentFilter();
         filter.addAction(ActivityScales.WEIGHT);
         receiver.register(getApplicationContext(),filter);
+        /** Запускаем главный сервис. */
+        startService(new Intent(this,ServiceScalesNet.class));
     }
 
     @Override
@@ -95,6 +98,7 @@ public class ActivityScales extends Activity implements View.OnClickListener{
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (i == DialogInterface.BUTTON_POSITIVE) {
+                            stopService(new Intent(ActivityScales.this, ServiceScalesNet.class));
                             //todo сделать что то для выключения весов
                             finish();
                         }

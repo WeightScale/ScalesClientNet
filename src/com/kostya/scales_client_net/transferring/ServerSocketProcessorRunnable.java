@@ -21,8 +21,8 @@ public class ServerSocketProcessorRunnable implements Runnable {
 
     private static final String TAG = "SERVER_SOCKET";
 
-    public ServerSocketProcessorRunnable(ServerSocket serverSocket, Context context) {
-        this.serverSocket = serverSocket;
+    public ServerSocketProcessorRunnable(Context context) {
+        //this.serverSocket = serverSocket;
         this.context = context;
     }
 
@@ -85,6 +85,13 @@ public class ServerSocketProcessorRunnable implements Runnable {
             Log.d(TAG, "Received message : " + inputLine);
             //outputPrintWriter.println("YOU TEXT ARRIVED. THANKS");
         }
+    }
+
+    public void closedSocket() throws IOException {
+        if (serverSocket != null)
+            serverSocket.close();
+        if (inputBufferedReader != null)
+            inputBufferedReader.close();
     }
 
 }

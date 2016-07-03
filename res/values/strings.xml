@@ -2,7 +2,7 @@
     <string name="app_name">ScalesClientNet</string>
 
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">НАСТРОЙКИ</string>
     <string name="scale_off">Выключение весов</string>
     <string name="OK">OK</string>
     <string name="Close">Закрыть</string>

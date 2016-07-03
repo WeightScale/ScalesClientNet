@@ -124,8 +124,10 @@ public class ServiceScalesNet extends Service{
     public void onDestroy() {
         super.onDestroy();
         notificationManager.cancel(DEFAULT_NOTIFICATION_ID);
-        usbBroadcastReceiver.unregister(getApplicationContext());
-        dataTransferringManager.stopDataTransferring();
+        usbBroadcastReceiver.unregister(getBaseContext());
+        if (dataTransferringManager!=null){
+            dataTransferringManager.stopDataTransferring();
+        }
         executorService.shutdown();
         if (serialPort != null)
             serialPort.close();
