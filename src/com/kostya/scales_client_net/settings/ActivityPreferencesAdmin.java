@@ -219,6 +219,49 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
                 });
             }
         },
+        KEY_LIST_BLUETOOTH(R.string.KEY_LIST_BLUETOOTH){
+            @Override
+            void setup(Preference name) throws Exception {
+                Context mContext = name.getContext();
+                try {
+                    name.setTitle('"' + getNameOfId(mContext, Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT))) + '"');
+                }catch (Exception e){}
+                //name.setSummary("Сеть по умолчанию. Для выбора конкретной сети из списка кофигураций если есть.");
+                name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                    @Override
+                    public boolean onPreferenceChange(Preference preference, Object o) {
+                        if (o.toString().isEmpty()) {
+                            Toast.makeText(mContext, R.string.preferences_no, Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+                        String netName = ((WifiConfiguration)o).SSID.replace("\"","");
+                        String netId = String.valueOf(((WifiConfiguration)o).networkId);
+                        if(systemTable.updateEntry(SystemTable.Name.WIFI_DEFAULT, netId)){
+                            if(systemTable.updateEntry(SystemTable.Name.WIFI_SSID, netName)){
+                                EditTextPreference wifi_ssid = (EditTextPreference)preference.getPreferenceManager().findPreference(preference.getContext().getString(R.string.KEY_WIFI_SSID));
+                                wifi_ssid.setTitle("Имя сети WiFi - " + netName);
+                                wifi_ssid.getEditor().putString(preference.getContext().getString(R.string.KEY_WIFI_SSID), netName).commit();
+                                wifi_ssid.getOnPreferenceChangeListener().onPreferenceChange(preference, netName);
+                            }
+                            name.setTitle(netName);
+                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ netName, Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            }
+
+            String getNameOfId(Context context, int id){
+                List<WifiConfiguration> list = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).getConfiguredNetworks();
+                for (WifiConfiguration wifiConfiguration : list){
+                    if (wifiConfiguration.networkId == id){
+                        return  wifiConfiguration.SSID.replace("\"", "");
+                    }
+                }
+                return "";
+            }
+        },
         KEY_WIFI_DEFAULT(R.string.KEY_WIFI_DEFAULT){
             @Override
             void setup(Preference name) throws Exception {

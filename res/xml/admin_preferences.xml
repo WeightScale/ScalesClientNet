@@ -47,6 +47,15 @@
                 <EditTextPreference android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
                 <EditTextPreference android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
             </PreferenceCategory>
+            <PreferenceCategory android:title="Настройки через bluetooth">
+                <com.kostya.scales_client_net.settings.ListBluetoothDevice android:summary="Список для выбора устройвства для соединения."
+                                                                           android:key="@string/KEY_LIST_BLUETOOTH"/>
+            </PreferenceCategory>
+        </PreferenceScreen>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Настройки сервера">
+        <PreferenceScreen>
+
         </PreferenceScreen>
     </PreferenceCategory>
     <PreferenceCategory android:title="Отправки данных">

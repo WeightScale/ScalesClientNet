@@ -205,4 +205,5 @@
     <string name="KEY_WIFI_LIST">key_wifi_list</string>
     <string name="KEY_WIFI_DEFAULT">key_wifi_default</string>
     <string name="KEY_PATH_FORM">key_path_form</string>
+    <string name="KEY_LIST_BLUETOOTH">key_list_bluetooth</string>
 </resources>
