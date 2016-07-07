@@ -114,7 +114,9 @@ public class ActivityScales extends Activity implements View.OnClickListener{
                 dialog.setMessage(getString(R.string.TEXT_MESSAGE));
                 dialog.show();
                 break;
-            default:
+            case R.id.bluetooth:
+                BluetoothBaseManager.start(getApplicationContext());
+                break;
 
         }
         return true;

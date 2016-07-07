@@ -35,6 +35,7 @@ public class Globals {
     private boolean isScalesConnect;
 
     public void initialize(Context context) {
+        preferencesScales = new Preferences(context);
         try {
             PackageManager packageManager = context.getPackageManager();
             packageInfo = packageManager.getPackageInfo(context.getPackageName(), 0);

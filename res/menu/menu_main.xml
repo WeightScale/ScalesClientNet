@@ -3,4 +3,5 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item android:id="@+id/preferences" android:title="@string/action_settings"/>
     <item android:id="@+id/exit" android:title="ВЫКЛЮЧИТЬ ВЕСЫ"/>
+    <item android:id="@+id/bluetooth" android:title="НАСТРОИТЬ СЕРВЕР"></item>
 </menu>
