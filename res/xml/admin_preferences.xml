@@ -35,53 +35,62 @@
                             android:entryValues="@array/array_flow_control" />
         </PreferenceScreen>
     </PreferenceCategory>
-    <PreferenceCategory android:title="Настройки WiFi">
-        <PreferenceScreen android:title="УСТАНОВКИ СЕТИ WIFI. " android:summary="Установки сети в которой должен работать сервис.">
-            <PreferenceCategory android:title="Конфигурация из списка">
-                <com.kostya.scales_client_net.settings.ListPreferenceWifi
-                        android:summary="Сеть по умолчанию из списка сохраненных.
-                        Выбора конкретной сети из списка сохраненных кофигураций если есть.Если сети нет в списке создайте имя сети и ключ."
-                        android:key="@string/KEY_WIFI_DEFAULT"/>
-            </PreferenceCategory>
-            <PreferenceCategory android:title="Ручной ввод сети WiFi">
-                <EditTextPreference android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
-                <EditTextPreference android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
-            </PreferenceCategory>
-            <PreferenceCategory android:title="Настройки через bluetooth">
-                <com.kostya.scales_client_net.settings.ListBluetoothDevice android:summary="Список для выбора устройвства для соединения."
-                                                                           android:key="@string/KEY_LIST_BLUETOOTH"/>
-            </PreferenceCategory>
-        </PreferenceScreen>
-    </PreferenceCategory>
     <PreferenceCategory android:title="Настройки сервера">
-        <PreferenceScreen>
+        <PreferenceScreen android:title="УСТАНОВКИ СЕРВЕРА" android:summary="Выбор и установка настроек сервера.">
+            <PreferenceCategory android:title="УСТАНОВКИ СЕТИ WIFI. " android:summary="Установки сети в которой должен работать сервис.">
+                <PreferenceScreen android:title="УСТАНОВКА ЧЕРЕЗ BLUETOOTH" android:summary="Для настройки необходимо перегрузить сервер и в течении 10 минут будет активный на сервере bluetooth.
+                                                В течении этого времени можно соединится по bluetooth и установить настройки.">
+                    <com.kostya.scales_client_net.settings.ListBluetoothDevice android:summary="Выбор из списка имя bluetooth сервера для соединения.
+                                                Если соединение успешно ниже появится настройки для ввода." android:key="@string/KEY_LIST_BLUETOOTH"/>
+                    <PreferenceCategory android:title="Ввод настроек сети WiFi">
+                        <EditTextPreference android:enabled="true" android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
+                        <EditTextPreference android:enabled="true" android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
+                    </PreferenceCategory>
+                </PreferenceScreen>
 
-        </PreferenceScreen>
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Отправки данных">
-        <PreferenceScreen android:title="настройки google disk" android:summary="Настройки для отправки данных через интернет на Google disk.">
-            <PreferenceCategory android:title="НАСТРОЙКИ GOOGLE DISK">
-                <EditTextPreference android:title="Таблица:" android:summary="@string/TEXT_MESSAGE7"
-                                    android:key="@string/KEY_SHEET" android:gravity="right" android:inputType="text"/>
-                <EditTextPreference android:title="@string/User_google_disk" android:summary="Account Google (Необжодимо создать в Google)." android:key="@string/KEY_USER" android:gravity="right"
-                                    android:inputType="textEmailAddress"/>
-                <EditTextPreference android:title="@string/Password_google_account" android:summary="Password account Google (должен создан в Google)." android:gravity="right"
-                                    android:key="@string/KEY_PASSWORD" android:inputType="textPassword"/>
-            </PreferenceCategory>
-            <PreferenceCategory android:title="Настройки Google Forms">
-                <Preference android:key="@string/KEY_PATH_FORM" android:title="ФАЙЛ ФОРМЫ"
-                            android:summary="Выбор файла для сохранения настроек формы. Сначала создается форма в Google Disk - Form. Создается фаил тип xml согластно инструкции."/>
+                <!--<PreferenceCategory android:title="Настройки через bluetooth">
+                    <PreferenceScreen android:summary="Для настройки необходимо перегрузить сервер и в течении 10 минут будет активный на сервере bluetooth.
+                В течении этого времени можно соединится по bluetooth и установить настройки.">
+                        <com.kostya.scales_client_net.settings.ListBluetoothDevice android:summary="Выбор из списка устройвства для соединения."
+                                                                                   android:key="@string/KEY_LIST_BLUETOOTH"/>
+                    </PreferenceScreen>
+                </PreferenceCategory>
+                <PreferenceCategory android:title="Конфигурация из списка">
+                    <com.kostya.scales_client_net.settings.ListPreferenceWifi
+                            android:summary="Сеть по умолчанию из списка сохраненных.
+                        Выбора конкретной сети из списка сохраненных кофигураций если есть.Если сети нет в списке создайте имя сети и ключ."
+                            android:key="@string/KEY_WIFI_DEFAULT"/>
+                </PreferenceCategory>-->
             </PreferenceCategory>
         </PreferenceScreen>
-        <PreferenceScreen android:title="НАСТРОЙКИ ДЛЯ СООБЩЕНИЙ" android:summary="Настройки для отправки весовых данных сообщением через СМС">
-            <EditTextPreference android:title="ТЕЛЕФОН" android:summary="Номер телефона для смс. Формат +38" android:key="@string/KEY_PHONE"
-                                android:gravity="right" android:inputType="phone"/>
-        </PreferenceScreen>
-        <Preference android:title="НАСТРОЙКА ОТСЫЛАТЕЛЯ" android:summary="Выбор куда отправлять данные." android:key="@string/KEY_SENDER"/>
 
-        <CheckBoxPreference android:enabled="true" android:title="МОБИЛЬНЫЙ ИНТЕРНЕТ" android:summary="Использовать мобильный интернет." android:key="@string/KEY_MOBIL_INTERNET" android:defaultValue="false"/>
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Настройки доступа">
-        <EditTextPreference android:key="@string/KEY_SERVICE_COD" android:gravity="right" android:inputType="numberPassword" android:title="КОД ДОСТУПА" android:summary="Выберите чтобы сохранить новый код для доступа к административным настройкам."/>
+
+
+        <!--<PreferenceCategory android:title="Отправки данных">
+            <PreferenceScreen android:title="НАСТРОЙКИ GOOGLE DISK" android:summary="Настройки для отправки данных через интернет на Google disk.">
+                <PreferenceCategory android:title="Настройки Google SpreadSheet">
+                    <EditTextPreference android:title="Таблица:" android:summary="@string/TEXT_MESSAGE7"
+                                        android:key="@string/KEY_SHEET" android:gravity="right" android:inputType="text"/>
+                    <EditTextPreference android:title="@string/User_google_disk" android:summary="Account Google (Необжодимо создать в Google)." android:key="@string/KEY_USER" android:gravity="right"
+                                        android:inputType="textEmailAddress"/>
+                    <EditTextPreference android:title="@string/Password_google_account" android:summary="Password account Google (должен создан в Google)." android:gravity="right"
+                                        android:key="@string/KEY_PASSWORD" android:inputType="textPassword"/>
+                </PreferenceCategory>
+                <PreferenceCategory android:title="Настройки Google Forms">
+                    <Preference android:key="@string/KEY_PATH_FORM" android:title="ФАЙЛ ФОРМЫ"
+                                android:summary="Выбор файла для сохранения настроек формы. Сначала создается форма в Google Disk - Form. Создается фаил тип xml согластно инструкции."/>
+                </PreferenceCategory>
+            </PreferenceScreen>
+            <PreferenceScreen android:title="НАСТРОЙКИ ДЛЯ СООБЩЕНИЙ" android:summary="Настройки для отправки весовых данных сообщением через СМС">
+                <EditTextPreference android:title="ТЕЛЕФОН" android:summary="Номер телефона для смс. Формат +38" android:key="@string/KEY_PHONE"
+                                    android:gravity="right" android:inputType="phone"/>
+            </PreferenceScreen>
+            <Preference android:title="НАСТРОЙКА ОТСЫЛАТЕЛЯ" android:summary="Выбор куда отправлять данные." android:key="@string/KEY_SENDER"/>
+
+            <CheckBoxPreference android:enabled="true" android:title="МОБИЛЬНЫЙ ИНТЕРНЕТ" android:summary="Использовать мобильный интернет." android:key="@string/KEY_MOBIL_INTERNET" android:defaultValue="false"/>
+        </PreferenceCategory>
+        <PreferenceCategory android:title="Настройки доступа">
+            <EditTextPreference android:key="@string/KEY_SERVICE_COD" android:gravity="right" android:inputType="numberPassword" android:title="КОД ДОСТУПА" android:summary="Выберите чтобы сохранить новый код для доступа к административным настройкам."/>
+        </PreferenceCategory>-->
     </PreferenceCategory>
 </PreferenceScreen>

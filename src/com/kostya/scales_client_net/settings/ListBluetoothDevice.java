@@ -8,12 +8,15 @@ import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.preference.ListPreference;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListAdapter;
@@ -26,10 +29,10 @@ import java.util.List;
  * Created by Kostya on 26.06.2016.
  */
 public class ListBluetoothDevice extends ListPreference {
-    private int mClickedDialogEntryIndex;
+    private String nameDevice;
     List<BluetoothDevice> listDevice;
     private ArrayAdapter adapter;
-    private BroadcastReceiver broadcastReceiver; //приёмник намерений
+    private BluetoothReceiver bluetoothReceiver; //приёмник намерений
 
 
     public ListBluetoothDevice(Context context, AttributeSet attrs) {
@@ -37,67 +40,34 @@ public class ListBluetoothDevice extends ListPreference {
         listDevice = new ArrayList<>();
         setPersistent(true);
 
-        mClickedDialogEntryIndex = getPersistedInt(0);
+        nameDevice = getPersistedString("");
 
-        broadcastReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) { //обработчик Bluetooth
-                String action = intent.getAction();
-                if (action != null) {
-                    if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                        listDevice.clear();
-                        adapter.notifyDataSetChanged();
-                    }//break;
-                    else if (BluetoothDevice.ACTION_FOUND.equals(action)) {// case BluetoothDevice.ACTION_FOUND:  //найдено устройство
-                        BluetoothDevice bd = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        listDevice.add(bd);
-                        adapter.notifyDataSetChanged();
-                        //BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        String name = null;
-                        if (bd != null) {
-                            name = bd.getName();
-                        }
-                    }//break;
-                    else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {  //case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:  //поиск завершён
-                    }//break;
-                    else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {//case BluetoothDevice.ACTION_ACL_CONNECTED:
-                    }//break;
-                    else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {//case BluetoothDevice.ACTION_ACL_DISCONNECTED:
-                    }//break;
-                }
-            }
-        };
-        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        getContext().registerReceiver(broadcastReceiver, intentFilter);
+        bluetoothReceiver = new BluetoothReceiver();
+        bluetoothReceiver.register(getContext());
     }
 
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-        int value = restoreValue? getPersistedInt(mClickedDialogEntryIndex) : (Integer) defaultValue;
+        String value = restoreValue? getPersistedString("") : (String) defaultValue;
         setValue(value);
     }
 
-    @Override
+   /* @Override
     protected void onDialogClosed(boolean positiveResult) {
-       if (positiveResult && mClickedDialogEntryIndex >= 0 /*&& entryValues != null*/) {
+       if (positiveResult ) {
             BluetoothDevice value = listDevice.get(mClickedDialogEntryIndex);
-            if (callChangeListener(value)) {
+            if (callChangeListener(nameDevice)) {
                 setValue(mClickedDialogEntryIndex);
             }
         }
-    }
+    }*/
 
-    public void setValue(int value) {
+    public void setValue(String value) {
         if (shouldPersist()) {
-            persistInt(value);
+            persistString(value);
         }
-        if (value != mClickedDialogEntryIndex) {
-            mClickedDialogEntryIndex = value;
+        if (!value.equals(nameDevice)) {
+            nameDevice = value;
             notifyChanged();
         }
     }
@@ -111,35 +81,37 @@ public class ListBluetoothDevice extends ListPreference {
     protected void onPrepareDialogBuilder( AlertDialog.Builder builder ){
         BluetoothAdapter.getDefaultAdapter().startDiscovery();
         adapter = new ConfigurationAdapter(getContext(), R.layout.item_list_sender, listDevice);
-
-        builder.setSingleChoiceItems(adapter, mClickedDialogEntryIndex, new DialogInterface.OnClickListener(){
+        builder.setSingleChoiceItems(adapter, 0, new DialogInterface.OnClickListener(){
             @Override
             public void onClick( DialogInterface dialog, int which ){
                 long l = adapter.getItemId( which );
-                setValue(which);
-
-                    /*if (mClickedDialogEntryIndex != which) {
-                        mClickedDialogEntryIndex = which;
-                        if (shouldPersist()) {
-                            persistInt(mClickedDialogEntryIndex);
-                        }
-                        ListPreferenceWifi.this.notifyChanged();
-                    }*/
-                ListBluetoothDevice.this.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
-
+                setValue(((BluetoothDevice)adapter.getItem(which)).getName());
+                //ListBluetoothDevice.this.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
+                callChangeListener(adapter.getItem(which));
                 dialog.dismiss();
             }
         } );
-
         builder.setPositiveButton("Найти", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                getContext().startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                dialogInterface.dismiss();
+
             }
         });
-
         //setDefaultValue(mClickedDialogEntryIndex);
+    }
+
+    @Override
+    protected void showDialog(Bundle state) {
+        super.showDialog(state);    //Call show on default first so we can override the handlers
+        final AlertDialog d = (AlertDialog) getDialog();
+        d.setTitle("Bluetooth устройства");
+        d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                bluetoothReceiver.register(getContext());
+                BluetoothAdapter.getDefaultAdapter().startDiscovery();
+            }
+        });
     }
 
     class ConfigurationAdapter extends ArrayAdapter<BluetoothDevice>{
@@ -164,4 +136,69 @@ public class ListBluetoothDevice extends ListPreference {
             return view;
         }
     }
+
+    class BluetoothReceiver extends BroadcastReceiver{
+        IntentFilter intentFilter;
+        protected boolean isRegistered;
+        BluetoothReceiver(){
+            intentFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+            intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+            intentFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action){
+                    case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                        try {
+                            listDevice.clear();
+                            adapter.notifyDataSetChanged();
+                        }catch (Exception e){}
+                        break;
+                    case BluetoothDevice.ACTION_FOUND:
+                        BluetoothDevice bd = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        listDevice.add(bd);
+                        try {
+                            adapter.notifyDataSetChanged();
+                        }catch (Exception e){}
+                        //BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        String name = null;
+                        if (bd != null) {
+                            name = bd.getName();
+                        }
+                        break;
+                    case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                        break;
+                    case BluetoothDevice.ACTION_ACL_CONNECTED:
+                        break;
+                    case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                        break;
+                    case BluetoothDevice.ACTION_PAIRING_REQUEST:
+                        Log.d("TAG", action);
+                        break;
+                    default:
+                }
+            }
+        }
+
+        public void register(Context context) {
+            if (!isRegistered){
+                isRegistered = true;
+                context.registerReceiver(this, intentFilter);
+            }
+        }
+
+        public void unregister(Context context) {
+            if (isRegistered) {
+                context.unregisterReceiver(this);  // edited
+                isRegistered = false;
+            }
+        }
+    }
+
 }

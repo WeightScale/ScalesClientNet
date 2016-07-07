@@ -6,6 +6,9 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.*;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.*;
 import android.provider.BaseColumns;
+import android.provider.Settings;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.view.Gravity;
@@ -28,14 +32,18 @@ import com.kostya.scales_client_net.R;
 import com.kostya.scales_client_net.provider.SenderTable;
 import com.kostya.scales_client_net.provider.SystemTable;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
+import com.kostya.scales_client_net.transferring.Commands;
+import com.kostya.scales_client_net.transferring.InterfaceCommands;
 
 import java.io.*;
 import java.util.List;
+import java.util.UUID;
 
 
 //import android.preference.PreferenceManager;
 
-public class ActivityPreferencesAdmin extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class ActivityPreferencesAdmin extends PreferenceActivity  {
+    private static BluetoothSocket bluetoothSocket;
     protected static Dialog dialog;
     private static SystemTable systemTable;
     private EditText input;
@@ -166,20 +174,14 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
                 name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_SSID));
-                name.setEnabled(false);
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-                        if(systemTable.updateEntry(SystemTable.Name.WIFI_SSID, o.toString())){
+
+                        if (Commands.CMD_SSID_WIFI.setParam(o.toString())){
                             name.setTitle(o.toString());
                             Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            //intent.putExtra("ssid", o.toString());
-                            Bundle bundle = intent.getBundleExtra(EXTRA_BUNDLE_WIFI);
-                            if (bundle == null)
-                                bundle = new Bundle();
-                            bundle.putString(KEY_SSID, o.toString());
-                            intent.putExtra(EXTRA_BUNDLE_WIFI, bundle);
-                            return flag_restore = true;
+                            return false;
                         }
 
                         preference.setSummary("Имя сети WiFi: ???");
@@ -195,7 +197,6 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
                 name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_KEY));
-                name.setEnabled(false);
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
@@ -220,13 +221,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             }
         },
         KEY_LIST_BLUETOOTH(R.string.KEY_LIST_BLUETOOTH){
+            Context mContext;
             @Override
             void setup(Preference name) throws Exception {
-                Context mContext = name.getContext();
-                try {
-                    name.setTitle('"' + getNameOfId(mContext, Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT))) + '"');
-                }catch (Exception e){}
-                //name.setSummary("Сеть по умолчанию. Для выбора конкретной сети из списка кофигураций если есть.");
+                mContext = name.getContext();
+                name.setTitle(name.getSharedPreferences().getString(mContext.getString(getResId()),""));
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
@@ -234,33 +233,33 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
                             Toast.makeText(mContext, R.string.preferences_no, Toast.LENGTH_SHORT).show();
                             return false;
                         }
-                        String netName = ((WifiConfiguration)o).SSID.replace("\"","");
-                        String netId = String.valueOf(((WifiConfiguration)o).networkId);
-                        if(systemTable.updateEntry(SystemTable.Name.WIFI_DEFAULT, netId)){
-                            if(systemTable.updateEntry(SystemTable.Name.WIFI_SSID, netName)){
-                                EditTextPreference wifi_ssid = (EditTextPreference)preference.getPreferenceManager().findPreference(preference.getContext().getString(R.string.KEY_WIFI_SSID));
-                                wifi_ssid.setTitle("Имя сети WiFi - " + netName);
-                                wifi_ssid.getEditor().putString(preference.getContext().getString(R.string.KEY_WIFI_SSID), netName).commit();
-                                wifi_ssid.getOnPreferenceChangeListener().onPreferenceChange(preference, netName);
-                            }
-                            name.setTitle(netName);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ netName, Toast.LENGTH_SHORT).show();
-                            return true;
-                        }
+                        BluetoothDevice device = (BluetoothDevice)o;
+                        //pairDevice(device);
+                        new ConnectThread(device).start();
+
+                        name.setTitle(device.getName());
+                        preference.getEditor().putString(mContext.getString(getResId()), device.getName()).commit();
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ device.getName(), Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 });
             }
 
-            String getNameOfId(Context context, int id){
-                List<WifiConfiguration> list = ((WifiManager)context.getSystemService(Context.WIFI_SERVICE)).getConfiguredNetworks();
-                for (WifiConfiguration wifiConfiguration : list){
-                    if (wifiConfiguration.networkId == id){
-                        return  wifiConfiguration.SSID.replace("\"", "");
-                    }
-                }
-                return "";
+            public void pairDevice(BluetoothDevice device) {
+                Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                int PAIRING_VARIANT_PIN = 272;
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, PAIRING_VARIANT_PIN);
+                mContext.sendBroadcast(intent);
+
+
+                /*Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, 1);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent);*/
             }
+
         },
         KEY_WIFI_DEFAULT(R.string.KEY_WIFI_DEFAULT){
             @Override
@@ -603,10 +602,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
         private interface OnChooserFileListener{
             void onChoose(String path);
         }
-        EnumPreferenceAdmin(int key){
-            resId = key;
-
-        }
+        EnumPreferenceAdmin(int key){resId = key;}
         public int getResId() { return resId; }
     }
 
@@ -673,7 +669,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         PreferenceManager.setDefaultValues(this, R.xml.admin_preferences, false);
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+        //PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         intent = new Intent();
         flag_restore = false;
         dialog = new Dialog(this);
@@ -689,7 +685,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
             intent.setClass(this,ServiceScalesNet.class).setAction(ACTION_PREFERENCE_ADMIN);
             startService(intent);
         }
-
+        try {bluetoothSocket.close();}catch (Exception e){}
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -749,10 +745,72 @@ public class ActivityPreferencesAdmin extends PreferenceActivity implements Shar
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        /*switch (s){
-            case getApplicationContext().getResources().getString(R.string.KEY_SPEED_PORT):
-        }*/
+    static class ConnectThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private BufferedReader inputBufferedReader;
+        private PrintWriter outputPrintWriter;
+        private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+        public ConnectThread(BluetoothDevice device) {
+            BluetoothSocket tmp = null;
+            //mmDevice = device;
+            try {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB)
+                    tmp = device.createInsecureRfcommSocketToServiceRecord(uuid);
+                else
+                    tmp = device.createRfcommSocketToServiceRecord(uuid);
+            } catch (IOException e) { }
+            mmSocket = tmp;
+        }
+
+        public void run() {
+            BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+            try {
+                mmSocket.connect();
+                //outputStream = socket.getOutputStream();
+                //inputStream = socket.getInputStream();
+                inputBufferedReader = new BufferedReader(new InputStreamReader(mmSocket.getInputStream()));
+                outputPrintWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(mmSocket.getOutputStream())), true);
+
+                //bufferedReader = new BufferedReader(new InputStreamReader(mmSocket.getOutputStream(), "UTF-8"));
+                //bufferedWriter = new BufferedWriter(new OutputStreamWriter(mmSocket.getOutputStream(), "UTF-8"));
+            } catch (IOException connectException) {
+                try {
+                    mmSocket.close();
+                } catch (IOException closeException) { }
+                return;
+            }
+            Commands.setInterfaceCommand(new InterfaceCommands() {
+                @Override
+                public String command(Commands commands) {
+                    try {
+                        outputPrintWriter.println(commands.toString());
+                        for (int i = 0; i < commands.getTimeOut(); ++i) {
+                            Thread.sleep(1L);
+                            if (inputBufferedReader.ready()) {
+                                String substring = inputBufferedReader.readLine();
+                                if(substring == null)
+                                    continue;
+                                if (substring.startsWith(commands.getName())){
+                                    substring = substring.replace(commands.getName(),"");
+                                    return substring.isEmpty() ? commands.getName() : substring;
+                                }else
+                                    return "";
+                            }
+                        }
+                    } catch (Exception ioe) {}
+                    return "";
+                }
+            });
+
+            //bluetoothSocket = mmSocket;
+        }
+
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) { }
+        }
     }
+
 }
