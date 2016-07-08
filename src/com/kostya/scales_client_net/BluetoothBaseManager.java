@@ -28,7 +28,6 @@ public class BluetoothBaseManager {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device.getName().equals("PAP4040 DUO")) {
-
                     serverDevice = device;
                     bluetoothAdapter.cancelDiscovery();
                     try {
@@ -44,7 +43,6 @@ public class BluetoothBaseManager {
                                     os.write(ssid.getBytes("UTF-8"));
                                     os.write(pass.getBytes("UTF-8"));
                                     Thread.sleep(3000);
-                                    Toast.makeText(context, "Настройки посланы", Toast.LENGTH_LONG).show();
                                     socket.close();
                                     bluetoothAdapter.disable();
                                     context.unregisterReceiver(mReceiver);
