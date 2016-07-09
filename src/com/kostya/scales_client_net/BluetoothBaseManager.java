@@ -9,11 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 public class BluetoothBaseManager {
@@ -27,7 +30,7 @@ public class BluetoothBaseManager {
                     bluetoothAdapter.startDiscovery();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device.getName().equals("PAP4040 DUO")) {
+                if (device.getName().equals(NAME)) {
                     serverDevice = device;
                     bluetoothAdapter.cancelDiscovery();
                     try {
@@ -48,18 +51,18 @@ public class BluetoothBaseManager {
                                     context.unregisterReceiver(mReceiver);
                                 } catch (Exception e) {
                                     e.printStackTrace();
-
                                 }
                             }
                         }.start();
                     } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
         }
     };
 
-    private static Context context;
+    private static ActivityScales activity;
     private static  final String NAME = "ServerScales";
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static BluetoothAdapter bluetoothAdapter;
@@ -67,13 +70,14 @@ public class BluetoothBaseManager {
     private static BluetoothSocket socket;
     private final static String SSID_COMMAND = "SSID";
     private final static String PASS_COMMAND = "PASS";
+    private final static String OK = "com.kostya.scales_client_net.OK";
 
-    public static void start(Context cntxt) {
-        context = cntxt;
+    public static void start(ActivityScales act) {
+        activity = act;
         IntentFilter intF = new IntentFilter();
         intF.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         intF.addAction(BluetoothDevice.ACTION_FOUND);
-        context.registerReceiver(mReceiver, intF);
+        activity.registerReceiver(mReceiver, intF);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!bluetoothAdapter.isEnabled())
             bluetoothAdapter.enable();
