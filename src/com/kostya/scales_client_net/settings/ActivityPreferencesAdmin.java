@@ -2,7 +2,6 @@ package com.kostya.scales_client_net.settings;
 
 //import android.content.SharedPreferences;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,7 +17,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.*;
 import android.provider.BaseColumns;
-import android.provider.Settings;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
 import android.view.Gravity;
@@ -28,28 +26,34 @@ import android.view.Window;
 import android.widget.*;
 import com.google.common.io.ByteStreams;
 import com.kostya.scales_client_net.Globals;
+import com.kostya.scales_client_net.Main;
 import com.kostya.scales_client_net.R;
 import com.kostya.scales_client_net.provider.SenderTable;
 import com.kostya.scales_client_net.provider.SystemTable;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
-import com.kostya.scales_client_net.transferring.Commands;
-import com.kostya.scales_client_net.transferring.InterfaceCommands;
+import com.kostya.scales_client_net.transferring.DataTransferringManager;
+import com.kostya.serializable.Command;
+import com.kostya.serializable.CommandObject;
+import com.kostya.serializable.Commands;
 
 import java.io.*;
 import java.util.List;
 import java.util.UUID;
 
-
 //import android.preference.PreferenceManager;
 
 public class ActivityPreferencesAdmin extends PreferenceActivity  {
     private static BluetoothSocket bluetoothSocket;
+    private static BluetoothRequestReceiver bluetoothRequestReceiver;
+    private static ConnectThread connectThread;
+    private static Command commandBluetooth;
     protected static Dialog dialog;
     private static SystemTable systemTable;
     private EditText input;
     public static Intent intent;
 
     private static final int FILE_SELECT_CODE = 10;
+    private static final int REQUEST_ENABLE_BLUETOOTH = 2;
     private static boolean flag_restore;
     private static final String TAG = ActivityPreferencesAdmin.class.getName();
     private static final String superCode = "343434";
@@ -177,8 +181,9 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-
-                        if (Commands.CMD_SSID_WIFI.setParam(o.toString())){
+                        //if (commandBluetooth.setData(Commands.CMD_SSID_WIFI,o.toString())){
+                        if (((Commands)connectThread.write(new CommandObject(Commands.CMD_RECONNECT_SERVER_NET,o.toString()))).equals(Commands.CMD_RECONNECT_SERVER_NET)){
+                        //if (commandBluetooth.sendObject(new CommandObject(Commands.CMD_SSID_WIFI,o.toString()))){
                             name.setTitle(o.toString());
                             Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
                             return false;
@@ -196,20 +201,15 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
             @Override
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
-                name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_KEY));
+                //name.setTitle(systemTable.getProperty(SystemTable.Name.WIFI_KEY));
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-
-                        if(systemTable.updateEntry(SystemTable.Name.WIFI_KEY, o.toString())){
+                        //if (commandBluetooth.setData(Commands.CMD_KEY_WIFI,o.toString())){
+                        if (commandBluetooth.sendObject(new CommandObject(Commands.CMD_KEY_WIFI,o.toString()))){
                             name.setTitle(o.toString());
                             Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            Bundle bundle = intent.getBundleExtra(EXTRA_BUNDLE_WIFI);
-                            if (bundle == null)
-                                bundle = new Bundle();
-                            bundle.putString(KEY_PASS, o.toString());
-                            intent.putExtra(EXTRA_BUNDLE_WIFI, bundle);
-                            return flag_restore = true;
+                            return false;
                         }
 
                         preference.setSummary("Ключь сети WiFi: ???");
@@ -220,12 +220,91 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 });
             }
         },
+        KEY_ENABLE_BLUETOOTH(R.string.KEY_ENABLE_BLUETOOTH){
+            Context mContext;
+            Preference preference;
+            @Override
+            void setup(Preference name) throws Exception {
+                mContext = name.getContext();
+                preference = name;
+                //name.setTitle(name.getSharedPreferences().getString(mContext.getString(getResId()),""));
+                name.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()){
+                            ((Activity)mContext).startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BLUETOOTH);
+                        }
+                        return false;
+                    }
+                });
+            }
+
+            public Preference getPreference(){
+                return preference;
+            }
+
+            public void pairDevice(BluetoothDevice device) {
+                Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                int PAIRING_VARIANT_PIN = 272;
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, PAIRING_VARIANT_PIN);
+                mContext.sendBroadcast(intent);
+
+
+                /*Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, 1);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent);*/
+            }
+
+        },
+        KEY_ENABLE_SETTING_COM(R.string.KEY_ENABLE_SETTING_COM){
+            Context mContext;
+            Preference preference;
+            @Override
+            void setup(Preference name) throws Exception {
+                mContext = name.getContext();
+                preference = name;
+                //name.setTitle(name.getSharedPreferences().getString(mContext.getString(getResId()),""));
+                name.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        DataTransferringManager dataTransferringManager = Main.getInstance().getDataTransferring();
+
+                        return false;
+                    }
+                });
+            }
+
+            public Preference getPreference(){
+                return preference;
+            }
+
+            public void pairDevice(BluetoothDevice device) {
+                Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                int PAIRING_VARIANT_PIN = 272;
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, PAIRING_VARIANT_PIN);
+                mContext.sendBroadcast(intent);
+
+
+                /*Intent intent = new Intent(BluetoothDevice.ACTION_PAIRING_REQUEST);
+                intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+                intent.putExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, 1);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent);*/
+            }
+
+        },
         KEY_LIST_BLUETOOTH(R.string.KEY_LIST_BLUETOOTH){
             Context mContext;
             @Override
             void setup(Preference name) throws Exception {
                 mContext = name.getContext();
-                name.setTitle(name.getSharedPreferences().getString(mContext.getString(getResId()),""));
+                //name.setTitle(name.getSharedPreferences().getString(mContext.getString(getResId()),""));
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
@@ -234,12 +313,16 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                             return false;
                         }
                         BluetoothDevice device = (BluetoothDevice)o;
-                        //pairDevice(device);
-                        new ConnectThread(device).start();
+                        bluetoothRequestReceiver.register();
 
-                        name.setTitle(device.getName());
-                        preference.getEditor().putString(mContext.getString(getResId()), device.getName()).commit();
-                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ device.getName(), Toast.LENGTH_SHORT).show();
+                        if (connectThread != null)
+                            connectThread.interrupt();
+                        connectThread = new ConnectThread(device);
+                        connectThread.start();
+
+                        //name.setTitle(device.getName());
+                        //preference.getEditor().putString(mContext.getString(getResId()), device.getName()).commit();
+                        //Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ device.getName(), Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 });
@@ -261,12 +344,31 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
             }
 
         },
+        KEY_RECONNECT_NET(R.string.KEY_RECONNECT_NET){
+            Context mContext;
+            @Override
+            void setup(Preference name) throws Exception {
+                mContext = name.getContext();
+                name.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        //if (commandBluetooth.setData(Commands.CMD_RECONNECT_SERVER_NET,"")){
+                        if (((Commands)connectThread.write(new CommandObject(Commands.CMD_RECONNECT_SERVER_NET))).equals(Commands.CMD_RECONNECT_SERVER_NET)){
+                        //if (commandBluetooth.sendObject(new CommandObject(Commands.CMD_RECONNECT_SERVER_NET))){
+                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ Commands.CMD_RECONNECT_SERVER_NET.name(), Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+                        return false;
+                    }
+                });
+            }
+        },
         KEY_WIFI_DEFAULT(R.string.KEY_WIFI_DEFAULT){
             @Override
             void setup(Preference name) throws Exception {
                 Context mContext = name.getContext();
                 try {
-                    name.setTitle('"' + getNameOfId(mContext, Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT))) + '"');
+                    name.setTitle("ИМЯ СЕТИ: " + getNameOfId(mContext, Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT))) );
                 }catch (Exception e){}
                 //name.setSummary("Сеть по умолчанию. Для выбора конкретной сети из списка кофигураций если есть.");
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -280,15 +382,17 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                         String netId = String.valueOf(((WifiConfiguration)o).networkId);
                         if(systemTable.updateEntry(SystemTable.Name.WIFI_DEFAULT, netId)){
                             if(systemTable.updateEntry(SystemTable.Name.WIFI_SSID, netName)){
-                                EditTextPreference wifi_ssid = (EditTextPreference)preference.getPreferenceManager().findPreference(preference.getContext().getString(R.string.KEY_WIFI_SSID));
-                                wifi_ssid.setTitle("Имя сети WiFi - " + netName);
-                                wifi_ssid.getEditor().putString(preference.getContext().getString(R.string.KEY_WIFI_SSID), netName).commit();
-                                wifi_ssid.getOnPreferenceChangeListener().onPreferenceChange(preference, netName);
+                                name.setTitle("ИМЯ СЕТИ: " + netName);
+                                Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ netName, Toast.LENGTH_SHORT).show();
+                                Bundle bundle = intent.getBundleExtra(EXTRA_BUNDLE_WIFI);
+                                if (bundle == null)
+                                    bundle = new Bundle();
+                                bundle.putString(KEY_SSID, netName);
+                                intent.putExtra(EXTRA_BUNDLE_WIFI, bundle);
+                                return flag_restore = true;
                             }
-                            name.setTitle(netName);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ netName, Toast.LENGTH_SHORT).show();
-                            return true;
                         }
+                        name.setTitle("ИМЯ СЕТИ: " + "???");
                         return false;
                     }
                 });
@@ -639,12 +743,8 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                             if (superCode.equals(string) || string.equals(systemTable.getProperty(SystemTable.Name.SERVICE_COD)))
                                 key = true;
                             if (key){
-                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                                    addPreferencesFromResource(R.xml.admin_preferences);
-                                    process();
-                                }else {
-                                    getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefFragmentAdmin()).commit();
-                                }
+                                addPreferencesFromResource(R.xml.preferences_admin);
+                                process();
                                 return;
                             }
                         }catch (Exception e){}
@@ -668,7 +768,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PreferenceManager.setDefaultValues(this, R.xml.admin_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_admin, false);
         //PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         intent = new Intent();
         flag_restore = false;
@@ -676,6 +776,8 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         startDialog();
         systemTable = new SystemTable(this);
+        commandBluetooth = new Command(this);
+        bluetoothRequestReceiver = new BluetoothRequestReceiver(this);
     }
 
     @Override
@@ -686,31 +788,7 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
             startService(intent);
         }
         try {bluetoothSocket.close();}catch (Exception e){}
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class PrefFragmentAdmin extends PreferenceFragment {
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.admin_preferences);
-
-            initAdminPreference();
-        }
-
-        void initAdminPreference(){
-            for (EnumPreferenceAdmin enumPreferenceAdmin : EnumPreferenceAdmin.values()){
-                Preference preference = findPreference(getString(enumPreferenceAdmin.getResId()));
-                if(preference != null){
-                    try {
-                        enumPreferenceAdmin.setup(preference);
-                    } catch (Exception e) {
-                        preference.setEnabled(false);
-                    }
-                }
-            }
-        }
+        try {connectThread.cancel(); }catch (Exception e){};
     }
 
     @Override
@@ -741,14 +819,23 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
 
                 }
                 break;
+            case REQUEST_ENABLE_BLUETOOTH:
+                Preference preference = findPreference(getString(R.string.KEY_SCREEN_BLUETOOTH));
+                if (resultCode == RESULT_OK) {
+                    preference.setEnabled(true);
+                }else
+                    preference.setEnabled(false);
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     static class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
-        private BufferedReader inputBufferedReader;
-        private PrintWriter outputPrintWriter;
+        //private BufferedReader inputBufferedReader;
+        //private PrintWriter outputPrintWriter;
+        private ObjectInputStream objectInputStream;
+        private ObjectOutputStream objectOutputStream;
         private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
         public ConnectThread(BluetoothDevice device) {
@@ -767,49 +854,136 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
             BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
             try {
                 mmSocket.connect();
-                //outputStream = socket.getOutputStream();
-                //inputStream = socket.getInputStream();
-                inputBufferedReader = new BufferedReader(new InputStreamReader(mmSocket.getInputStream()));
-                outputPrintWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(mmSocket.getOutputStream())), true);
+                //inputBufferedReader = new BufferedReader(new InputStreamReader(mmSocket.getInputStream()));
+                //outputPrintWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(mmSocket.getOutputStream())), true);
+                objectOutputStream = new ObjectOutputStream(mmSocket.getOutputStream());
+                objectOutputStream.flush();
+                objectInputStream = new ObjectInputStream(mmSocket.getInputStream());
 
-                //bufferedReader = new BufferedReader(new InputStreamReader(mmSocket.getOutputStream(), "UTF-8"));
-                //bufferedWriter = new BufferedWriter(new OutputStreamWriter(mmSocket.getOutputStream(), "UTF-8"));
             } catch (IOException connectException) {
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) { }
+                cancel();
                 return;
             }
-            Commands.setInterfaceCommand(new InterfaceCommands() {
+            commandBluetooth.setInterfaceCommand(new Command.InterfaceCommands() {
                 @Override
-                public String command(Commands commands) {
+                public Commands command(CommandObject object) {
                     try {
-                        outputPrintWriter.println(commands.toString());
+                        /*outputPrintWriter.println(commands.toString());
                         for (int i = 0; i < commands.getTimeOut(); ++i) {
                             Thread.sleep(1L);
                             if (inputBufferedReader.ready()) {
                                 String substring = inputBufferedReader.readLine();
                                 if(substring == null)
                                     continue;
-                                if (substring.startsWith(commands.getName())){
-                                    substring = substring.replace(commands.getName(),"");
-                                    return substring.isEmpty() ? commands.getName() : substring;
-                                }else
-                                    return "";
+                                *//** Получаем ответ на команду *//*
+                                return commands.getResponse(substring);
                             }
-                        }
+                        }*/
+                        objectOutputStream.writeObject(object);
+                        CommandObject commandObject = (CommandObject)objectInputStream.readObject();
+                        if(commandObject != null)
+                        /** Получаем ответ на команду */
+                            return commandObject.getCommandName();
+                        //for (int i = 0; i < object.getCommandName().getTimeOut(); ++i) {
+                            //Thread.sleep(1L);
+                            //if (objectInputStream.available()>0) {
+
+
+                            //}
+                        //}
+
                     } catch (Exception ioe) {}
-                    return "";
+                    return null;
                 }
             });
 
             //bluetoothSocket = mmSocket;
         }
 
-        public void cancel() {
+        public Object write(Object object){
             try {
-                mmSocket.close();
-            } catch (IOException e) { }
+                objectOutputStream.writeObject(object);
+                CommandObject commandObject = (CommandObject)objectInputStream.readObject();
+                if(commandObject != null)
+                /** Получаем ответ на команду */
+                    return commandObject.getCommandName();
+            } catch (Exception ioe) {}
+            return null;
+        }
+
+        public void cancel() {
+            try {mmSocket.close();} catch (Exception e) { }
+            //try {inputBufferedReader.close();}catch (Exception e){}
+            //try {outputPrintWriter.close();}catch (Exception e){}
+            try {objectInputStream.close();}catch (Exception e){}
+            try {objectOutputStream.close();}catch (Exception e){}
+        }
+    }
+
+    void setBluetoothScreen(boolean b){
+        findPreference(getString(R.string.KEY_WIFI_SSID)).setEnabled(b);
+        findPreference(getString(R.string.KEY_WIFI_KEY)).setEnabled(b);
+        findPreference(getString(R.string.KEY_RECONNECT_NET)).setEnabled(b);
+    }
+
+    class BluetoothRequestReceiver extends BroadcastReceiver{
+        Context mContext;
+        final IntentFilter intentFilter;
+        protected boolean isRegistered;
+
+        BluetoothRequestReceiver(Context context){
+            mContext = context;
+            intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            intentFilter.addAction(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+            intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action){
+                    case BluetoothAdapter.ACTION_STATE_CHANGED:
+                        switch (BluetoothAdapter.getDefaultAdapter().getState()) {
+                            case BluetoothAdapter.STATE_OFF:
+                                break;
+                            case BluetoothAdapter.STATE_ON:
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case BluetoothAdapter.ACTION_REQUEST_ENABLE:
+                        break;
+                    case BluetoothDevice.ACTION_ACL_CONNECTED:
+                        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        Toast.makeText(mContext, mContext.getString(R.string.bluetooth_connected)+' '+ device.getName(), Toast.LENGTH_SHORT).show();
+                        setBluetoothScreen(true);
+                        break;
+                    case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                        device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        Toast.makeText(mContext, mContext.getString(R.string.bluetooth_disconnected)+' '+ device.getName(), Toast.LENGTH_SHORT).show();
+                        setBluetoothScreen(false);
+                        try {bluetoothSocket.close();}catch (Exception e){}
+                        try {connectThread.cancel(); }catch (Exception e){};
+                        break;
+                    default:
+                }
+            }
+        }
+
+        public void register() {
+            if (!isRegistered){
+                isRegistered = true;
+                mContext.registerReceiver(this, intentFilter);
+            }
+        }
+
+        public void unregister() {
+            if (isRegistered) {
+                mContext.unregisterReceiver(this);  // edited
+                isRegistered = false;
+            }
         }
     }
 

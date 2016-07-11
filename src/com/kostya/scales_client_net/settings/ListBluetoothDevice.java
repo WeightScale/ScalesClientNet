@@ -1,6 +1,8 @@
 package com.kostya.scales_client_net.settings;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.*;
@@ -20,6 +22,7 @@ import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListAdapter;
+import android.widget.TextView;
 import com.kostya.scales_client_net.R;
 
 import java.util.ArrayList;
@@ -31,8 +34,10 @@ import java.util.List;
 public class ListBluetoothDevice extends ListPreference {
     private String nameDevice;
     List<BluetoothDevice> listDevice;
+    AlertDialog dialogBluetooth;
     private ArrayAdapter adapter;
     private BluetoothReceiver bluetoothReceiver; //приёмник намерений
+    //private BroadcastReceiver broadcastReceiver;
 
 
     public ListBluetoothDevice(Context context, AttributeSet attrs) {
@@ -42,8 +47,45 @@ public class ListBluetoothDevice extends ListPreference {
 
         nameDevice = getPersistedString("");
 
-        bluetoothReceiver = new BluetoothReceiver();
-        bluetoothReceiver.register(getContext());
+        /*broadcastReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) { //обработчик Bluetooth
+                String action = intent.getAction();
+                if (action != null) {
+                    if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+                        listDevice.clear();
+                        adapter.notifyDataSetChanged();
+                    }//break;
+                    else if (BluetoothDevice.ACTION_FOUND.equals(action)) {// case BluetoothDevice.ACTION_FOUND:  //найдено устройство
+                        BluetoothDevice bd = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        listDevice.add(bd);
+                        adapter.notifyDataSetChanged();
+                        //BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                        String name = null;
+                        if (bd != null) {
+                            name = bd.getName();
+                        }
+                    }//break;
+                    else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {  //case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:  //поиск завершён
+                    }//break;
+                    else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {//case BluetoothDevice.ACTION_ACL_CONNECTED:
+                    }//break;
+                    else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {//case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                    }//break;
+                }
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        getContext().registerReceiver(broadcastReceiver, intentFilter);*/
+
+        bluetoothReceiver = new BluetoothReceiver(getContext());
+        bluetoothReceiver.register();
     }
 
     @Override
@@ -79,36 +121,40 @@ public class ListBluetoothDevice extends ListPreference {
 
     @Override
     protected void onPrepareDialogBuilder( AlertDialog.Builder builder ){
-        BluetoothAdapter.getDefaultAdapter().startDiscovery();
-        adapter = new ConfigurationAdapter(getContext(), R.layout.item_list_sender, listDevice);
-        builder.setSingleChoiceItems(adapter, 0, new DialogInterface.OnClickListener(){
-            @Override
-            public void onClick( DialogInterface dialog, int which ){
-                long l = adapter.getItemId( which );
-                setValue(((BluetoothDevice)adapter.getItem(which)).getName());
-                //ListBluetoothDevice.this.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
-                callChangeListener(adapter.getItem(which));
-                dialog.dismiss();
-            }
-        } );
-        builder.setPositiveButton("Найти", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
 
-            }
-        });
+            BluetoothAdapter.getDefaultAdapter().startDiscovery();
+            adapter = new ConfigurationAdapter(getContext(), R.layout.item_list, listDevice);
+            builder.setTitle("Поиск...");
+            builder.setSingleChoiceItems(adapter, 0, new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick( DialogInterface dialog, int which ){
+                    long l = adapter.getItemId( which );
+                    setValue(((BluetoothDevice)adapter.getItem(which)).getName());
+                    //ListBluetoothDevice.this.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
+                    callChangeListener(adapter.getItem(which));
+                    dialog.dismiss();
+                }
+            } );
+            builder.setPositiveButton("Найти", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            });
+
         //setDefaultValue(mClickedDialogEntryIndex);
     }
 
     @Override
     protected void showDialog(Bundle state) {
         super.showDialog(state);    //Call show on default first so we can override the handlers
-        final AlertDialog d = (AlertDialog) getDialog();
-        d.setTitle("Bluetooth устройства");
-        d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+        dialogBluetooth = (AlertDialog) getDialog();
+        //dialogBluetooth.setTitle("Список Bluetooth");
+        dialogBluetooth.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                bluetoothReceiver.register(getContext());
+                //bluetoothReceiver.register();
+
                 BluetoothAdapter.getDefaultAdapter().startDiscovery();
             }
         });
@@ -126,11 +172,11 @@ public class ListBluetoothDevice extends ListPreference {
 
             if (view == null) {
                 LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-                view = layoutInflater.inflate(R.layout.item_list_sender, parent, false);
+                view = layoutInflater.inflate(R.layout.item_list, parent, false);
             }
 
             BluetoothDevice d = getItem(position);
-            CheckedTextView textView = (CheckedTextView) view.findViewById(R.id.text1);
+            TextView textView = (TextView) view.findViewById(R.id.text1);
             textView.setText(d.getName().replace("\"",""));
 
             return view;
@@ -138,15 +184,15 @@ public class ListBluetoothDevice extends ListPreference {
     }
 
     class BluetoothReceiver extends BroadcastReceiver{
-        IntentFilter intentFilter;
+        Context mContext;
+        final IntentFilter intentFilter;
         protected boolean isRegistered;
-        BluetoothReceiver(){
+
+        BluetoothReceiver(Context context){
+            mContext = context;
             intentFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
             intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
             intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-            intentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-            intentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-            intentFilter.addAction(BluetoothDevice.ACTION_PAIRING_REQUEST);
         }
 
         @Override
@@ -158,6 +204,11 @@ public class ListBluetoothDevice extends ListPreference {
                         try {
                             listDevice.clear();
                             adapter.notifyDataSetChanged();
+                            if(dialogBluetooth != null){
+                                if (dialogBluetooth.isShowing()){
+                                    dialogBluetooth.setTitle("Поиск...");
+                                }
+                            }
                         }catch (Exception e){}
                         break;
                     case BluetoothDevice.ACTION_FOUND:
@@ -166,36 +217,29 @@ public class ListBluetoothDevice extends ListPreference {
                         try {
                             adapter.notifyDataSetChanged();
                         }catch (Exception e){}
-                        //BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                        String name = null;
-                        if (bd != null) {
-                            name = bd.getName();
-                        }
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                        break;
-                    case BluetoothDevice.ACTION_ACL_CONNECTED:
-                        break;
-                    case BluetoothDevice.ACTION_ACL_DISCONNECTED:
-                        break;
-                    case BluetoothDevice.ACTION_PAIRING_REQUEST:
-                        Log.d("TAG", action);
+                        if(dialogBluetooth != null){
+                            if (dialogBluetooth.isShowing()){
+                                dialogBluetooth.setTitle("Список Bluetooth");
+                            }
+                        }
                         break;
                     default:
                 }
             }
         }
 
-        public void register(Context context) {
+        public void register() {
             if (!isRegistered){
                 isRegistered = true;
-                context.registerReceiver(this, intentFilter);
+                mContext.registerReceiver(this, intentFilter);
             }
         }
 
-        public void unregister(Context context) {
+        public void unregister() {
             if (isRegistered) {
-                context.unregisterReceiver(this);  // edited
+                mContext.unregisterReceiver(this);  // edited
                 isRegistered = false;
             }
         }

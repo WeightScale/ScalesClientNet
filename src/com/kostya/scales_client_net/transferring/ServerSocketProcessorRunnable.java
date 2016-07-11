@@ -1,29 +1,36 @@
 package com.kostya.scales_client_net.transferring;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
-import com.kostya.scales_client_net.ActivityScales;
+import com.kostya.serializable.Command;
+import com.kostya.serializable.CommandObject;
+import com.kostya.serializable.Commands;
+import com.kostya.terminals.Terminals;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerSocketProcessorRunnable implements Runnable {
 
     public static final int SERVER_PORT = 8700;//8700
     private ServerSocket serverSocket;
+    private ExecutorService executorService;
     private final Context context;
     private BufferedReader inputBufferedReader;
+    private ObjectInputStream objectInputStream;
     private PrintWriter outputPrintWriter;
 
 
     private static final String TAG = "SERVER_SOCKET";
 
     public ServerSocketProcessorRunnable(Context context) {
-        //this.serverSocket = serverSocket;
+
         this.context = context;
+        executorService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -41,14 +48,7 @@ public class ServerSocketProcessorRunnable implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-
-                Log.v(TAG, "before socket ACCEPT");
                 Socket socket = serverSocket.accept();
-                Log.v(TAG, "ACCEPTED");
-
-                InputStream inputStream = socket.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                inputBufferedReader = new BufferedReader(inputStreamReader);
 
 //                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
 //                BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
@@ -56,35 +56,68 @@ public class ServerSocketProcessorRunnable implements Runnable {
 //                printWriter.println("some info");
 
                 //outputPrintWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                processInputInputOutputBuffers();
+                //processInputInputOutputBuffers(socket);
+                processInputInputOutputObject(socket);
             }
 
-            inputBufferedReader.close();
+            //objectInputStream.close();
+            //inputBufferedReader.close();
             //outputPrintWriter.close();
-
-            Log.v(TAG, "BUFFERS CLOSED");
-
-        } catch (Exception ex) {
-            Log.v(TAG, "server socket processor thread EXCEPTION : " + ex);
-
-        } catch (Error error){
-            Log.v(TAG, "server socket processor thread ERROR : " + error);
-        }
-
+        } catch (Exception ex) {}
+        try {serverSocket.close();} catch (IOException e) {}
     }
 
+    private void processInputInputOutputBuffers(Socket socket){
+        try {
+            inputBufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            String inputLine = inputBufferedReader.readLine();
+            if (inputLine != null){
 
-    private void processInputInputOutputBuffers() throws IOException {
+                Command command = new Command(context);
+                /** Выполняем принятую команду. */
+                command.execute(inputLine);
+                //sendNotifySubText(inputLine);
+                //Log.d(TAG, "Received message : " + inputLine);
+                //outputPrintWriter.println("YOU TEXT ARRIVED. THANKS");
+            }
+        } catch (Exception e) {}
+        try {inputBufferedReader.close();} catch (IOException e1) {}
+    }
 
-        Log.v(TAG, "...SOCKET DATA PROCESSING...");
-
-        String inputLine = inputBufferedReader.readLine();
-        if (inputLine != null){
-            context.sendBroadcast(new Intent(ActivityScales.WEIGHT).putExtra("weight", inputLine));
-            //sendNotifySubText(inputLine);
-            Log.d(TAG, "Received message : " + inputLine);
-            //outputPrintWriter.println("YOU TEXT ARRIVED. THANKS");
-        }
+    private void processInputInputOutputObject(Socket socket) {
+        try {
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            Object object = objectInputStream.readObject();
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (object !=null){
+                        if(object instanceof CommandObject){
+                            ((CommandObject)object).execute(context);
+                        }
+                    }
+                }
+            });
+            /*if (object !=null){
+                *//**//*if (object instanceof String){
+                    Command command = new Command(context);
+                    *//**//**//**//** Выполняем принятую команду. *//**//**//**//*
+                    command.execute(object.toString());
+                    //Log.i(TAG, object.toString());
+                }else*//**//*
+                ((CommandObject)object).execute(context);
+                *//**//*if (object instanceof CommandObject) {
+                    CommandObject commands = (CommandObject) object;
+                    commands.execute(context);
+                    Log.i(TAG, object.toString());
+                }else if (object instanceof Terminals){
+                    Terminals terminals = (Terminals) object;
+                    String s = terminals.filter("hhh");
+                    Log.i(TAG, object.toString());
+                }*//**//*
+            }*/
+        } catch (Exception e) {}
+        try {objectInputStream.close();} catch (IOException e1) {}
     }
 
     public void closedSocket() throws IOException {

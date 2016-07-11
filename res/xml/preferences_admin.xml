@@ -1,50 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/settings_port">
-        <PreferenceScreen android:title="УСТАНОВКИ COM ПОРТА" android:summary="Настройки COM порта для связи.">
-            <com.kostya.scales_client_net.settings.DialogSpeedPort
-                    android:key="@string/KEY_SPEED_PORT"
-                    android:title="Скорость:"
-                    android:summary="Скорость передачи данных."
-                    android:defaultValue="9600"
-                    android:numeric="signed"
-                    android:inputType="number" />
-            <ListPreference android:key="@string/KEY_SERIAL_FRAME"
-                            android:title="Формат:"
-                            android:summary="Формат кадра в битах"
-                            android:defaultValue="8"
-                            android:entries="@array/array_bits"
-                            android:entryValues="@array/array_bits"/>
-            <ListPreference android:key="@string/KEY_PARITY_BIT"
-                            android:title="Бит четности:"
-                            android:summary="Бит проверки на четность"
-                            android:defaultValue="none"
-                            android:entries="@array/array_parity_bit"
-                            android:entryValues="@array/array_parity_bit"/>
-            <ListPreference android:key="@string/KEY_STOP_BIT"
-                            android:title="Стоп бит:"
-                            android:summary="Стоповый бит."
-                            android:defaultValue="1"
-                            android:entries="@array/array_stop_bits"
-                            android:entryValues="@array/array_stop_bits"/>
-            <ListPreference android:key="@string/KEY_FLOW_CONTROL"
-                            android:title="Флов контроль:"
-                            android:summary="Флов контроль."
-                            android:defaultValue="OFF"
-                            android:entries="@array/array_flow_control"
-                            android:entryValues="@array/array_flow_control" />
-        </PreferenceScreen>
-    </PreferenceCategory>
     <PreferenceCategory android:title="Настройки сервера">
         <PreferenceScreen android:title="УСТАНОВКИ СЕРВЕРА" android:summary="Выбор и установка настроек сервера.">
             <PreferenceCategory android:title="УСТАНОВКИ СЕТИ WIFI. " android:summary="Установки сети в которой должен работать сервис.">
                 <PreferenceScreen android:title="УСТАНОВКА ЧЕРЕЗ BLUETOOTH" android:summary="Для настройки необходимо перегрузить сервер и в течении 10 минут будет активный на сервере bluetooth.
-                                                В течении этого времени можно соединится по bluetooth и установить настройки.">
-                    <com.kostya.scales_client_net.settings.ListBluetoothDevice android:summary="Выбор из списка имя bluetooth сервера для соединения.
+                                                В течении этого времени можно соединится по bluetooth и установить настройки." android:key="@string/KEY_ENABLE_BLUETOOTH">
+                    <PreferenceCategory android:title="Ввод настроек сети WiFi" android:key="@string/KEY_SCREEN_BLUETOOTH" android:enabled="true">
+                        <com.kostya.scales_client_net.settings.ListBluetoothDevice android:enabled="true" android:title="СПИСОК BLUETOOTH" android:summary="Выбор из списка имя bluetooth сервера для соединения.
                                                 Если соединение успешно ниже появится настройки для ввода." android:key="@string/KEY_LIST_BLUETOOTH"/>
-                    <PreferenceCategory android:title="Ввод настроек сети WiFi">
-                        <EditTextPreference android:enabled="true" android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
-                        <EditTextPreference android:enabled="true" android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
+                        <EditTextPreference android:enabled="false" android:title="ИМЯ СЕТИ WIFI" android:summary="Имя сети WiFi. Для создания если нет в списке конфигураций. " android:key="@string/KEY_WIFI_SSID"/>
+                        <EditTextPreference android:enabled="false" android:title="КЛЮЧ СЕТИ WIFI" android:summary="Ключь безопасности сети для авторизации подключения." android:key="@string/KEY_WIFI_KEY"/>
+                        <Preference android:enabled="false" android:title="Пересоеденить сеть сервера" android:key="@string/KEY_RECONNECT_NET"/>
                     </PreferenceCategory>
                 </PreferenceScreen>
 
@@ -55,12 +21,45 @@
                                                                                    android:key="@string/KEY_LIST_BLUETOOTH"/>
                     </PreferenceScreen>
                 </PreferenceCategory>
-                <PreferenceCategory android:title="Конфигурация из списка">
-                    <com.kostya.scales_client_net.settings.ListPreferenceWifi
-                            android:summary="Сеть по умолчанию из списка сохраненных.
-                        Выбора конкретной сети из списка сохраненных кофигураций если есть.Если сети нет в списке создайте имя сети и ключ."
-                            android:key="@string/KEY_WIFI_DEFAULT"/>
-                </PreferenceCategory>-->
+                -->
+            </PreferenceCategory>
+            <PreferenceCategory android:title="@string/settings_port">
+                <PreferenceScreen android:title="УСТАНОВКИ COM ПОРТА" android:summary="Настройки COM порта для связи." android:key="@string/KEY_ENABLE_SETTING_COM">
+                    <PreferenceCategory android:title="Ввод настроек COM порта" android:key="@string/KEY_SCREEN_COM_PORT" android:enabled="false">
+                        <com.kostya.scales_client_net.settings.DialogSpeedPort
+                                android:key="@string/KEY_SPEED_PORT"
+                                android:title="Скорость:"
+                                android:summary="Скорость передачи данных."
+                                android:defaultValue="9600"
+                                android:numeric="signed"
+                                android:inputType="number" />
+                        <ListPreference android:key="@string/KEY_SERIAL_FRAME"
+                                        android:title="Формат:"
+                                        android:summary="Формат кадра в битах"
+                                        android:defaultValue="8"
+                                        android:entries="@array/array_bits"
+                                        android:entryValues="@array/array_bits"/>
+                        <ListPreference android:key="@string/KEY_PARITY_BIT"
+                                        android:title="Бит четности:"
+                                        android:summary="Бит проверки на четность"
+                                        android:defaultValue="none"
+                                        android:entries="@array/array_parity_bit"
+                                        android:entryValues="@array/array_parity_bit"/>
+                        <ListPreference android:key="@string/KEY_STOP_BIT"
+                                        android:title="Стоп бит:"
+                                        android:summary="Стоповый бит."
+                                        android:defaultValue="1"
+                                        android:entries="@array/array_stop_bits"
+                                        android:entryValues="@array/array_stop_bits"/>
+                        <ListPreference android:key="@string/KEY_FLOW_CONTROL"
+                                        android:title="Флов контроль:"
+                                        android:summary="Флов контроль."
+                                        android:defaultValue="OFF"
+                                        android:entries="@array/array_flow_control"
+                                        android:entryValues="@array/array_flow_control" />
+                    </PreferenceCategory>
+
+                </PreferenceScreen>
             </PreferenceCategory>
         </PreferenceScreen>
 
@@ -92,5 +91,14 @@
         <PreferenceCategory android:title="Настройки доступа">
             <EditTextPreference android:key="@string/KEY_SERVICE_COD" android:gravity="right" android:inputType="numberPassword" android:title="КОД ДОСТУПА" android:summary="Выберите чтобы сохранить новый код для доступа к административным настройкам."/>
         </PreferenceCategory>-->
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Настройки клиента">
+        <PreferenceScreen android:title="УСТАНОВКИ КЛИЕНТА" android:summary="Выбор и установка настроек клиента.">
+            <com.kostya.scales_client_net.settings.ListPreferenceWifi
+                    android:summary="Сеть по умолчанию из списка сохраненных.
+                        Выбора конкретной сети из списка сохраненных кофигураций если есть.Если сети нет в списке создайте имя сети и ключ."
+                    android:key="@string/KEY_WIFI_DEFAULT"/>
+        </PreferenceScreen>
+
     </PreferenceCategory>
 </PreferenceScreen>

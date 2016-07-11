@@ -12,9 +12,8 @@ import com.kostya.scales_client_net.transferring.DataTransferringManager;
  * @author Kostya
  */
 public class Main extends Application {
-    private static Main instance = new Main();
+    private static Main instance;
     private DataTransferringManager dataTransferring;
-    private DataTransferringManager settingsTransferring;
     private Globals globals;
     private String deviceId = "";
     public static Context currentContext;
@@ -23,6 +22,7 @@ public class Main extends Application {
     public void onCreate() {
         super.onCreate();
 
+        instance = this;
         globals = Globals.getInstance();
         globals.initialize(this);
 
@@ -34,8 +34,6 @@ public class Main extends Application {
         }
         /** Для передачи данных относящихся для весов. */
         dataTransferring = new DataTransferringManager(DataTransferringManager.SERVICE_INFO_TYPE_SCALES);
-        /** Для передачи данных относящихся к системе. */
-        settingsTransferring = new DataTransferringManager(DataTransferringManager.SERVICE_INFO_TYPE_SETTINGS);
         startService(new Intent(this,ServiceScalesNet.class));
     }
 
@@ -45,11 +43,7 @@ public class Main extends Application {
         return dataTransferring;
     }
 
-    public DataTransferringManager getSettingsTransferring() {
-        if (settingsTransferring == null)
-            settingsTransferring = new DataTransferringManager(DataTransferringManager.SERVICE_INFO_TYPE_SETTINGS);
-        return settingsTransferring;
-    }
+
 
     private void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
@@ -62,5 +56,7 @@ public class Main extends Application {
     public static Main getInstance() { return instance; }
 
     public static void setInstance(Main instance) { Main.instance = instance; }
+
+
 
 }

@@ -25,7 +25,7 @@ public class WifiBaseManager  {
     /** Обратный вызов события соединения с сетью. */
     private final OnWifiConnectListener onWifiConnectListener;
     private final WifiManager wifiManager;
-    private String ssid = "", pass = "";
+    private String ssid = ""/*, pass = ""*/;
     private int netConfigId;
     private static final String TAG = WifiBaseManager.class.getName();
     private static final String PSK = "PSK";
@@ -50,7 +50,7 @@ public class WifiBaseManager  {
         SystemTable systemTable = new SystemTable(context);
         try {
             ssid = systemTable.getProperty(SystemTable.Name.WIFI_SSID);
-            pass = systemTable.getProperty(SystemTable.Name.WIFI_KEY);
+            //pass = systemTable.getProperty(SystemTable.Name.WIFI_KEY);
             netConfigId = Integer.valueOf(systemTable.getProperty(SystemTable.Name.WIFI_DEFAULT));
         } catch (Exception e) {
             eventsTable.insertNewEvent(e.getMessage(), EventsTable.Event.WIFI_EVENT);
@@ -63,7 +63,7 @@ public class WifiBaseManager  {
 
     public void setSsid(String ssid) {this.ssid = ssid;}
 
-    public void setPass(String pass) {this.pass = pass;}
+    //public void setPass(String pass) {this.pass = pass;}
 
     /**
      * Начало подключения к определенной сети wifi.

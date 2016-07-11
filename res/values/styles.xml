@@ -110,4 +110,16 @@
         <item name="android:layout">@layout/preference_category</item>
     </style>
 
+    <style name="SpanTextKg" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">@dimen/text_large_x</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+
+    <style name="SpanTextWeight" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textSize">@dimen/text_big</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+
 </resources>

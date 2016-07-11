@@ -14,10 +14,12 @@
         <LinearLayout android:layout_width="fill_parent"
                       android:layout_height="wrap_content"
                       android:orientation="vertical"
-                      android:background="@color/greenEnd">
+                      android:background="@color/background">
             <FrameLayout
                     android:layout_width="fill_parent"
-                    android:layout_height="fill_parent">
+                    android:layout_height="fill_parent"
+                    android:layout_margin="@dimen/stroke"
+                    android:background="@color/white">
 
                 <LinearLayout android:layout_width="fill_parent"
                               android:layout_height="wrap_content"
@@ -26,15 +28,26 @@
                               android:orientation="horizontal">
                     <TextView
                             android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="@dimen/weight_windows"
                             android:id="@+id/weightTextView"
-                            android:textColor="@color/white"
+                            android:textColor="@color/text"
                             android:textSize="@dimen/text_big"
                             android:gravity="center" android:clickable="true"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:textIsSelectable="true"/>
+                            android:textIsSelectable="true"
+                            android:typeface="normal"/>
                 </LinearLayout>
+
             </FrameLayout>
+
+            <Spinner
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinnerServer"
+                    android:spinnerMode="dropdown"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    />
         </LinearLayout>
 
         <LinearLayout android:orientation="horizontal"
@@ -52,7 +65,7 @@
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" android:background="@color/greenEnd"
+            android:layout_height="wrap_content" android:background="@color/background1"
             >
         <ImageView
                 android:layout_width="match_parent"

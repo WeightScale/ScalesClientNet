@@ -22,8 +22,8 @@ public class DataTransferringManager {
 
     public static final int SERVICE_INFO_PORT = 8856;//8856
     public static final String SERVICE_INFO_TYPE_SCALES = "_scales._tcp.local.";
-    public static final String SERVICE_INFO_TYPE_SETTINGS = "_settings._tcp.local.";
-    public static final String SERVICE_INFO_NAME = "scales_client_service";
+    public static final String SERVICE_INFO_NAME_CLIENT = "ScalesClient";
+    public static final String SERVICE_INFO_NAME_SERVER = "ScalesServer";
     private static final String SERVICE_INFO_PROPERTY_IP_VERSION = "ipv4";
     private static final String SERVICE_INFO_PROPERTY_DEVICE = "device";
     private static final String TAG = DataTransferringManager.class.getName();
@@ -31,6 +31,8 @@ public class DataTransferringManager {
     private ServiceScalesNet.OnRegisterServiceListener onRegisterServiceListener;
     private ExecutorService executorService;
     private JmDNS jmdns;
+
+    private List<ServiceInfo> listServers = new ArrayList<>();
     private ServiceListener listener;
     private ServiceInfo serviceInfo;
     private MulticastLock multiCastLock;
@@ -71,25 +73,32 @@ public class DataTransferringManager {
                 jmdns.addServiceListener(serviceType, listener = new ServiceListener() {
                     @Override
                     public void serviceResolved(ServiceEvent ev) {
-                        Log.i(TAG, "Service resolved " + ev.getName());
+                        Log.i(TAG, "Service resolved " + ev.getType());
                     }
 
                     @Override
                     public void serviceRemoved(ServiceEvent ev) {
-                        //ServiceInfo[] info = jmdns.list(SERVICE_INFO_TYPE);
-                        onRegisterServiceListener.onEvent(jmdns.list(serviceType).length);
+                        for (ServiceInfo info : listServers){
+                            if(info.equals(ev.getInfo())){
+                                listServers.remove(info);
+                            }
+                        }
+                        onRegisterServiceListener.onEvent(listServers.size());
                         Log.i(TAG, "Service removed " + ev.getName());
                     }
 
                     @Override
                     public void serviceAdded(ServiceEvent event) {
-                        //ServiceInfo[] info = jmdns.list(SERVICE_INFO_TYPE);
-                        onRegisterServiceListener.onEvent(jmdns.list(serviceType).length);
+                        /** Если сервер добавляем список серверов. */
+                        if (event.getName().startsWith(SERVICE_INFO_NAME_SERVER)){
+                            listServers.add(event.getInfo());
+                            onRegisterServiceListener.onEvent(listServers.size());
+                        }
                         jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
                     }
                 });
                 Hashtable<String, String> settings = setSettingsHashTable(context);
-                serviceInfo = ServiceInfo.create(serviceType, SERVICE_INFO_NAME , SERVICE_INFO_PORT, 0, 0, true, settings);
+                serviceInfo = ServiceInfo.create(serviceType, SERVICE_INFO_NAME_CLIENT , SERVICE_INFO_PORT, 0, 0, true, settings);
                 jmdns.registerService(serviceInfo);
                 serverThreadProcessor.startServerProcessorThread(context);
             }
@@ -181,16 +190,29 @@ public class DataTransferringManager {
                 executorService = Executors.newCachedThreadPool();
 
             Set<String> ipAddressesSet = getNeighborDevicesIpAddressesSet(context);
+
             for (String serverIpAddress : ipAddressesSet) {
-                ClientProcessor clientProcessor = new ClientProcessor(serverIpAddress, context);
-                executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        clientProcessor.sendSimpleMessageToOtherDevice(message);
-                    }
-                });
+                sendMessageToDevicesInNetwork(context, serverIpAddress, message);
             }
         }
+    }
+
+    public void sendMessageToDevicesInNetwork(final Context context, String ipAddress, String message){
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                new ClientProcessor(message, ipAddress, context);
+            }
+        });
+    }
+
+    public void sendObjectToDevicesInNetwork(final Context context, String ipAddress, Object object){
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                new ClientProcessor(object, ipAddress, context);
+            }
+        });
     }
 
     private Set<String> getNeighborDevicesIpAddressesSet(Context context){
@@ -241,5 +263,7 @@ public class DataTransferringManager {
 
         return onlineDevices;
     }
+
+    public List<ServiceInfo> getListServers() {return listServers;}
 
 }

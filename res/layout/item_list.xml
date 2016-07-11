@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/text1"
+          android:singleLine="true"
+          android:layout_width="fill_parent"
+          android:layout_height="?android:attr/listPreferredItemHeight"
+          android:textSize="@dimen/text_medium"
+          android:textColor="@color/background2" android:background="@android:color/transparent"
+          android:padding="@dimen/corners"
+          android:clickable="false"
+          android:focusable="false" android:focusableInTouchMode="false"
+          android:gravity="center_vertical"/><!--android:layout_height="?android:attr/listPreferredItemHeight"--><!--style="?android:attr/spinnerDropDownItemStyle"--><!--android:layout_height="?android:attr/listPreferredItemHeight"-->

@@ -206,4 +206,9 @@
     <string name="KEY_WIFI_DEFAULT">key_wifi_default</string>
     <string name="KEY_PATH_FORM">key_path_form</string>
     <string name="KEY_LIST_BLUETOOTH">key_list_bluetooth</string>
+    <string name="KEY_RECONNECT_NET">key_recconect_net</string>
+    <string name="KEY_ENABLE_BLUETOOTH">key_enable_bluetooth</string>
+    <string name="KEY_SCREEN_BLUETOOTH">key_screen_bluetooth</string>
+    <string name="KEY_ENABLE_SETTING_COM">key_enable_setting_com</string>
+    <string name="KEY_SCREEN_COM_PORT">key_screen_com_port</string>
 </resources>

@@ -39,7 +39,7 @@ public class SystemTable {
         FLOW_CONTROL("flow_control"),
         SERVICE_COD("service_cod"),
         WIFI_SSID("wifi_ssid"),
-        WIFI_KEY("wifi_key"),
+        //WIFI_KEY("wifi_key"),
         WIFI_DEFAULT("wifi_default"),
         PATH_FORM("path_form");
 
@@ -184,7 +184,7 @@ public class SystemTable {
         insert(db, Name.USER_GOOGLE, "user_account_google");
         insert(db, Name.PHONE, "0500000000");
         insert(db, Name.WIFI_SSID, "SSID");
-        insert(db, Name.WIFI_KEY, "12345678");
+        //insert(db, Name.WIFI_KEY, "12345678");
         insert(db, Name.WIFI_DEFAULT, "0");
     }
 

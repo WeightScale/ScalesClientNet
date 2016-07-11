@@ -30,6 +30,7 @@ import com.kostya.scales_client_net.provider.EventsTable;
 import com.kostya.scales_client_net.provider.SystemTable;
 import com.kostya.scales_client_net.settings.ActivityPreferencesAdmin;
 import com.kostya.scales_client_net.transferring.DataTransferringManager;
+import com.kostya.serializable.ComPortObject;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -100,9 +101,9 @@ public class ServiceScalesNet extends Service{
                                 case ActivityPreferencesAdmin.KEY_SSID:
                                     wifiBaseManager.setSsid(bundle.getString(key));
                                     break;
-                                case ActivityPreferencesAdmin.KEY_PASS:
+                                /*case ActivityPreferencesAdmin.KEY_PASS:
                                     wifiBaseManager.setPass(bundle.getString(key));
-                                    break;
+                                    break;*/
                                 default:
                             }
                         }
@@ -115,7 +116,7 @@ public class ServiceScalesNet extends Service{
 
          sendNotification(getString(R.string.app_name),getString(R.string.app_name),"Программа \"Сетевые весы\" ");
 
-        finedUsbDevice();
+        //finedUsbDevice();
         //return Service.START_STICKY;
         return START_REDELIVER_INTENT;
     }
@@ -165,7 +166,7 @@ public class ServiceScalesNet extends Service{
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             switch (action){
-                case ACTION_USB_PERMISSION:
+                /*case ACTION_USB_PERMISSION:
                     boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                     UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     usbDeviceId = device.getProductId();
@@ -184,7 +185,7 @@ public class ServiceScalesNet extends Service{
                         serialPort.close();
                     setNotifyContentText("COM порт закрыт");
                     eventsTable.insertNewEvent("USB отсоеденено PID-"+ usbDeviceId, EventsTable.Event.USB_EVENT);
-                    break;
+                    break;*/
                 case ConnectivityManager.CONNECTIVITY_ACTION:
                     ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
                     NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -217,18 +218,18 @@ public class ServiceScalesNet extends Service{
         }
     }
 
-    private void setupSerialPort(UsbDevice usbDevice){
+    /*private void setupSerialPort(UsbDevice usbDevice){
         try {
-            PortProperties portProperties = new PortProperties(getApplicationContext());
+            ComPortObject portProperties = new PortProperties(getApplicationContext());
             UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
             serialPort = UsbSerialDevice.createUsbSerialDevice(usbDevice, connection);
             if (serialPort != null) {
                 if (serialPort.open()) { //Set Serial Connection Parameters.
-                    serialPort.setBaudRate(portProperties.getSpeed()); //serialPort.setBaudRate(9600);                                   /** Скорость порта. */
-                    serialPort.setBaudRate(portProperties.getDataBits()); //serialPort.setDataBits(UsbSerialInterface.DATA_BITS_8);         /** Формат данных. */
-                    serialPort.setStopBits(portProperties.getStopBits()); //serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);         /** Сторовый бит. */
-                    serialPort.setParity(portProperties.getParity()); //serialPort.setParity(UsbSerialInterface.PARITY_NONE);           /** Бит четности. */
-                    serialPort.setFlowControl(portProperties.getFlowControl()); //serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF); /** Флов контроль. */
+                    serialPort.setBaudRate(portProperties.getSpeed()); //serialPort.setBaudRate(9600);                                   *//** Скорость порта. *//*
+                    serialPort.setBaudRate(portProperties.getDataBits()); //serialPort.setDataBits(UsbSerialInterface.DATA_BITS_8);         *//** Формат данных. *//*
+                    serialPort.setStopBits(portProperties.getStopBits()); //serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);         *//** Сторовый бит. *//*
+                    serialPort.setParity(portProperties.getParity()); //serialPort.setParity(UsbSerialInterface.PARITY_NONE);           *//** Бит четности. *//*
+                    serialPort.setFlowControl(portProperties.getFlowControl()); //serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF); *//** Флов контроль. *//*
                     serialPort.read(mCallback);
                     setNotifyContentText("COM порт открыт");
                     eventsTable.insertNewEvent("Весы соеденены", EventsTable.Event.USB_EVENT);
@@ -242,9 +243,9 @@ public class ServiceScalesNet extends Service{
             eventsTable.insertNewEvent("Ошибка " + e.getMessage(), EventsTable.Event.USB_EVENT);
         }
 
-    }
+    }*/
 
-    private void finedUsbDevice(){
+    /*private void finedUsbDevice(){
         HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
         if (!usbDevices.isEmpty()) {
             boolean keep = false;
@@ -275,9 +276,9 @@ public class ServiceScalesNet extends Service{
                     break;
             }
         }
-    }
+    }*/
 
-    private final UsbReadCallback mCallback = new UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
+    /*private final UsbReadCallback mCallback = new UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
 
         @Override
         public void onReceivedData(byte[] arg0) {
@@ -298,7 +299,7 @@ public class ServiceScalesNet extends Service{
                 e.printStackTrace();
             }
         }
-    };
+    };*/
 
     public void sendNotification(String Ticker, String Title, String Text) {
 
@@ -335,49 +336,5 @@ public class ServiceScalesNet extends Service{
         notificationManager.notify(DEFAULT_NOTIFICATION_ID, builder.build());
     }
 
-    private static class PortProperties{
-        private final SystemTable systemTable;
-        int speed;
-        int dataBits;
-        int stopBits;
-        int parity;
-        int flowControl;
-        public static final HashMap<String, Integer> usbProperties = new LinkedHashMap<>();
-        static {
-            usbProperties.put("5", UsbSerialInterface.DATA_BITS_5);
-            usbProperties.put("6", UsbSerialInterface.DATA_BITS_6);
-            usbProperties.put("7", UsbSerialInterface.DATA_BITS_7 );
-            usbProperties.put("8", UsbSerialInterface.DATA_BITS_8);
 
-            usbProperties.put("1",UsbSerialInterface.STOP_BITS_1);
-            usbProperties.put("2",UsbSerialInterface.STOP_BITS_2);
-            usbProperties.put("1.5",UsbSerialInterface.STOP_BITS_15);
-
-            usbProperties.put("even",UsbSerialInterface.PARITY_EVEN);
-            usbProperties.put("mark",UsbSerialInterface.PARITY_MARK);
-            usbProperties.put("none",UsbSerialInterface.PARITY_NONE);
-            usbProperties.put("odd",UsbSerialInterface.PARITY_ODD);
-            usbProperties.put("space",UsbSerialInterface.PARITY_SPACE);
-
-            usbProperties.put("DSR_DTR",UsbSerialInterface.FLOW_CONTROL_DSR_DTR);
-            usbProperties.put("OFF",UsbSerialInterface.FLOW_CONTROL_OFF);
-            usbProperties.put("RTS_CTS",UsbSerialInterface.FLOW_CONTROL_RTS_CTS);
-            usbProperties.put("XON_XOFF",UsbSerialInterface.FLOW_CONTROL_XON_XOFF);
-        }
-
-        PortProperties(Context context) throws Exception {
-            systemTable = new SystemTable(context);
-            speed = Integer.valueOf(systemTable.getProperty(SystemTable.Name.SPEED_PORT));
-            dataBits = usbProperties.get(systemTable.getProperty(SystemTable.Name.FRAME_PORT));
-            stopBits = usbProperties.get(systemTable.getProperty(SystemTable.Name.STOP_BIT));
-            parity = usbProperties.get(systemTable.getProperty(SystemTable.Name.PARITY_BIT));
-            flowControl = usbProperties.get(systemTable.getProperty(SystemTable.Name.FLOW_CONTROL));
-        }
-
-        public int getSpeed() {return speed;}
-        public int getDataBits() {return dataBits;}
-        public int getStopBits() {return stopBits;}
-        public int getParity() {return parity;}
-        public int getFlowControl() {return flowControl;}
-    }
 }

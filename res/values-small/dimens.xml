@@ -3,6 +3,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="weight_windows">100dp</dimen>
+
     <dimen name="text_big">60sp</dimen>
     <dimen name="text_large_xx">40sp</dimen>
     <dimen name="text_large_x">30sp</dimen>

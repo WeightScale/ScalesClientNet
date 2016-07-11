@@ -104,7 +104,7 @@ public class ListPreferenceWifi extends ListPreference {
             }
         } );
 
-        builder.setPositiveButton("Найти", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Настроить", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 getContext().startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
