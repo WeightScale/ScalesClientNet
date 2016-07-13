@@ -6,8 +6,10 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 import com.kostya.scales_client_net.provider.EventsTable;
 import com.kostya.scales_client_net.settings.Preferences;
+import com.kostya.terminals.TerminalObject;
 
 import java.io.File;
+import java.util.List;
 
 /** Created by Kostya on 23.01.2016.
  * @author Kostya
@@ -18,6 +20,8 @@ public class Globals {
     /** Настройки для весов. */
     protected Preferences preferencesScales;
     protected PackageInfo packageInfo;
+    private TerminalObject currentTerminal;
+    public List<TerminalObject> terminalObjectList;
     /** Версия программы весового модуля. */
     private final int microSoftware = 4;
     protected String networkOperatorName;
@@ -117,6 +121,7 @@ public class Globals {
 
     public static void setInstance(Globals instance) { Globals.instance = instance; }
 
+    public void setCurrentTerminal(TerminalObject terminal) {this.currentTerminal = terminal;}
 
-
+    public TerminalObject getCurrentTerminal() {return currentTerminal;}
 }

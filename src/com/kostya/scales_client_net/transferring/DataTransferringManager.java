@@ -1,12 +1,16 @@
 package com.kostya.scales_client_net.transferring;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.util.Log;
+import com.kostya.scales_client_net.ActivityScales;
 import com.kostya.scales_client_net.Main;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
+import com.kostya.serializable.CommandObject;
+import com.kostya.serializable.Commands;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
@@ -24,15 +28,17 @@ public class DataTransferringManager {
     public static final String SERVICE_INFO_TYPE_SCALES = "_scales._tcp.local.";
     public static final String SERVICE_INFO_NAME_CLIENT = "ScalesClient";
     public static final String SERVICE_INFO_NAME_SERVER = "ScalesServer";
-    private static final String SERVICE_INFO_PROPERTY_IP_VERSION = "ipv4";
-    private static final String SERVICE_INFO_PROPERTY_DEVICE = "device";
+    public static final String SERVICE_INFO_PROPERTY_IP_VERSION = "ipv4";
+    public static final String SERVICE_INFO_PROPERTY_DEVICE = "device";
     private static final String TAG = DataTransferringManager.class.getName();
 
     private ServiceScalesNet.OnRegisterServiceListener onRegisterServiceListener;
     private ExecutorService executorService;
     private JmDNS jmdns;
+    private Context context;
 
     private List<ServiceInfo> listServers = new ArrayList<>();
+    private ServiceInfo currentServer;
     private ServiceListener listener;
     private ServiceInfo serviceInfo;
     private MulticastLock multiCastLock;
@@ -41,14 +47,15 @@ public class DataTransferringManager {
     private boolean registered;
 
 
-    public DataTransferringManager(String type){
+    public DataTransferringManager(Context context, String type){
+        this.context = context;
         executorService = Executors.newCachedThreadPool();
         serviceType = type;
     }
 
-    /*public DataTransferringManager(){
-        executorService = Executors.newCachedThreadPool();
-    }*/
+    public Context getContext() {return context;}
+
+    public void setCurrentServer(ServiceInfo currentServer) {this.currentServer = currentServer;}
 
     public DataTransferringManager(String type, ServiceScalesNet.OnRegisterServiceListener listener){
         serviceType = type;
@@ -73,7 +80,16 @@ public class DataTransferringManager {
                 jmdns.addServiceListener(serviceType, listener = new ServiceListener() {
                     @Override
                     public void serviceResolved(ServiceEvent ev) {
-                        Log.i(TAG, "Service resolved " + ev.getType());
+                        /** Если сервер добавляем список серверов. */
+                        if (ev.getName().startsWith(SERVICE_INFO_NAME_SERVER)){
+                            listServers.add(ev.getInfo());
+                            onRegisterServiceListener.onEvent(listServers.size());
+                            getContext().sendBroadcast(new Intent(ActivityScales.ACTION_UPDATE_SERVER_LIST));
+                            CommandObject commandObject = new CommandObject(Commands.CMD_DEFAULT_TERMINAL);
+                            commandObject.getObjectFromDeviceInNetwork(context, getIPv4FromServiceInfo(ev.getInfo()));
+                            //sendObjectOutputInputToDevice(context, getIPv4FromServiceInfo(ev.getInfo()), new CommandObject(Commands.CMD_GET_TERMINAL));
+                            //sendObjectToDevicesInNetwork(context, getIPv4FromServiceInfo(ev.getInfo()), new CommandObject(Commands.CMD_GET_TERMINAL));
+                        }
                     }
 
                     @Override
@@ -89,11 +105,6 @@ public class DataTransferringManager {
 
                     @Override
                     public void serviceAdded(ServiceEvent event) {
-                        /** Если сервер добавляем список серверов. */
-                        if (event.getName().startsWith(SERVICE_INFO_NAME_SERVER)){
-                            listServers.add(event.getInfo());
-                            onRegisterServiceListener.onEvent(listServers.size());
-                        }
                         jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
                     }
                 });
@@ -211,6 +222,16 @@ public class DataTransferringManager {
             @Override
             public void run() {
                 new ClientProcessor(object, ipAddress, context);
+            }
+        });
+    }
+
+    public void sendObjectOutputInputToDevice(final Context context, String ipAddress, Object object){
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                ClientProcessor clientProcessor = new ClientProcessor(ipAddress, context);
+                clientProcessor.sendObjectOutputInputToDevice(object);
             }
         });
     }

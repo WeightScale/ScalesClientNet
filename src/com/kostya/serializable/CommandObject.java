@@ -2,61 +2,83 @@ package com.kostya.serializable;
 
 
 import android.content.Context;
+import com.kostya.scales_client_net.transferring.ClientProcessor;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
 
 /**
- * Created by Kostya on 10.07.2016.
+ * @author Kostya on 10.07.2016.
  */
 public class CommandObject implements Serializable {
     private static final long serialVersionUID = 7526471155622776147L;
     private Commands commandName;
-    String value = "";
-    public CommandObject(Commands name, String value){
-        this.commandName = name;
-        this.value = value;
+    Object object = null;
+    public CommandObject(Commands name, Object o){
+        commandName = name;
+        object = o;
     }
 
     public CommandObject(Commands name){
-        this.commandName = name;
+        commandName = name;
     }
 
     public void execute(Context context){
-        if (value.isEmpty())
+        if (object == null)
             commandName.fetch(context);
         else
-            commandName.setup(context, value);
+            commandName.setup(context, object);
     }
 
     public Commands getCommandName() {
         return commandName;
     }
 
-    public void appendValue(String v){
-        value = v;
+    public void appendObject(Object o){
+        object = o;
     }
 
-    /**
-     * Always treat de-serialization as a full-blown constructor, by
-     * validating the final state of the de-serialized object.
-     */
-    /*private void readObject( ObjectInputStream aInputStream ) throws ClassNotFoundException, IOException {
-        //always perform the default de-serialization first
-        aInputStream.defaultReadObject();
+    public Object readObject(Socket socket) {
+        ObjectInputStream objectInputStream = null;
+        Object obj = null;
+        try{
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            obj = objectInputStream.readObject();
+            objectInputStream.close();
+        } catch (Exception e) {
+            try {objectInputStream.close();} catch (IOException e1) {}
+        }finally{
+            try {objectInputStream.close();} catch (IOException e1) {}
+            return obj;
+        }
+        //return null;
+    }
 
-        //make defensive copy of the mutable Date field
-        //fDateOpened = new Date(fDateOpened.getTime());
+    public void getObjectFromDeviceInNetwork(final Context context, String ipAddress){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ClientProcessor clientProcessor = new ClientProcessor(ipAddress, context);
+                try {
+                    Socket socket = clientProcessor.getSocket();
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                    objectOutputStream.writeObject(CommandObject.this);
+                    CommandObject obj = (CommandObject)readObject(socket);
+                    obj.execute(context);
+                    objectOutputStream.close();
+                    socket.close();
 
-        //ensure that object state has not been corrupted or tampered with maliciously
-        //validateState();
-    }*/
+                    //clientProcessor.sendObjectOutputInputToDevice(CommandObject.this);
+                } catch (Exception e) {
+                    clientProcessor.closeSocket();
+                }finally{
+                    clientProcessor.closeSocket();
+                }
+            }
+        }).start();
+    }
 
-    /**
-     * This is the default implementation of writeObject.
-     * Customise if necessary.
-     */
-    /*private void writeObject( ObjectOutputStream aOutputStream ) throws IOException {
-        //perform the default serialization for all non-transient, non-static fields
-        aOutputStream.defaultWriteObject();
-    }*/
 }

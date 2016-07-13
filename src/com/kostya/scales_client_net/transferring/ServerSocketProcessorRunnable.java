@@ -2,9 +2,11 @@ package com.kostya.scales_client_net.transferring;
 
 import android.content.Context;
 import android.util.Log;
+import com.kostya.scales_client_net.Globals;
 import com.kostya.serializable.Command;
 import com.kostya.serializable.CommandObject;
 import com.kostya.serializable.Commands;
+import com.kostya.terminals.TerminalObject;
 import com.kostya.terminals.Terminals;
 
 import java.io.*;
@@ -92,31 +94,14 @@ public class ServerSocketProcessorRunnable implements Runnable {
                 @Override
                 public void run() {
                     if (object !=null){
-                        if(object instanceof CommandObject){
-                            ((CommandObject)object).execute(context);
-                        }
+                        ((CommandObject)object).execute(context);
                     }
                 }
             });
-            /*if (object !=null){
-                *//**//*if (object instanceof String){
-                    Command command = new Command(context);
-                    *//**//**//**//** Выполняем принятую команду. *//**//**//**//*
-                    command.execute(object.toString());
-                    //Log.i(TAG, object.toString());
-                }else*//**//*
-                ((CommandObject)object).execute(context);
-                *//**//*if (object instanceof CommandObject) {
-                    CommandObject commands = (CommandObject) object;
-                    commands.execute(context);
-                    Log.i(TAG, object.toString());
-                }else if (object instanceof Terminals){
-                    Terminals terminals = (Terminals) object;
-                    String s = terminals.filter("hhh");
-                    Log.i(TAG, object.toString());
-                }*//**//*
-            }*/
-        } catch (Exception e) {}
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
         try {objectInputStream.close();} catch (IOException e1) {}
     }
 

@@ -2,6 +2,7 @@ package com.kostya.scales_client_net;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.*;
 import android.database.Cursor;
@@ -16,6 +17,7 @@ import android.view.*;
 import android.widget.*;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
 import com.kostya.scales_client_net.settings.ActivityPreferences;
+import com.kostya.scales_client_net.transferring.DataTransferringManager;
 
 import javax.jmdns.ServiceInfo;
 import java.util.List;
@@ -27,11 +29,13 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     private ImageView buttonBack;
     private TextView textViewWeight;
     private Spinner spinnerServers;
-    private Receiver receiver;
+    private SpinnerAdapter spinnerAdapter;
+    private BaseReceiver baseReceiver;
     private SpannableStringBuilder textKg;
     private static final int FILE_SELECT_CODE = 10;
     private static  final String TAG = ActivityScales.class.getName();
-    public static final String WEIGHT = "com.kostya.scales_client_net.WEIGHT";
+    public static final String ACTION_WEIGHT = "com.kostya.scales_client_net.WEIGHT";
+    public static final String ACTION_UPDATE_SERVER_LIST = "com.kostya.scales_client_net.UPDATE_SERVER_LIST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +67,8 @@ public class ActivityScales extends Activity implements View.OnClickListener{
         loadTypeSpinnerData();
 
         findViewById(R.id.imageMenu).setOnClickListener(this);
-        receiver = new Receiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ActivityScales.WEIGHT);
-        receiver.register(getApplicationContext(),filter);
+        baseReceiver = new BaseReceiver(getApplicationContext());
+        baseReceiver.register();
         /** Запускаем главный сервис. */
         startService(new Intent(this,ServiceScalesNet.class));
     }
@@ -87,7 +89,7 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        receiver.unregister(getApplicationContext());
+        baseReceiver.unregister();
     }
 
     @Override
@@ -168,46 +170,21 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     }
 
     public void loadTypeSpinnerData() {
+        spinnerAdapter = new SpinnerAdapter(this, R.layout.type_spinner, Main.getInstance().getDataTransferring().getListServers());
+        spinnerAdapter.notifyDataSetChanged();
+        spinnerServers.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                ServiceInfo serviceInfo = (ServiceInfo) adapterView.getItemAtPosition(i);
+                Main.getInstance().getDataTransferring().setCurrentServer(serviceInfo);
+            }
 
-            SpinnerAdapter typeAdapter = new SpinnerAdapter(this, R.layout.type_spinner, Main.getInstance().getDataTransferring().getListServers());
-            //typeAdapter.setDropDownViewResource(R.layout.type_spinner_dropdown_item);
-            typeAdapter.notifyDataSetChanged();
-            spinnerServers.setAdapter(typeAdapter);
-
-        }
-
-    class Receiver extends BroadcastReceiver{
-        protected boolean isRegistered;
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(ActivityScales.WEIGHT)) {
-                String weight = intent.getStringExtra("weight");
-                weight.trim();
-                try {
-                    weight = weight.substring(0,weight.indexOf("("));
-                    SpannableStringBuilder spannableWeightText = new SpannableStringBuilder(weight);
-                    spannableWeightText.setSpan(new TextAppearanceSpan(ActivityScales.this, R.style.SpanTextWeight),0,weight.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-                    spannableWeightText.append(textKg);
-                    textViewWeight.setText(spannableWeightText, TextView.BufferType.SPANNABLE);
-                }catch (Exception e){}
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
-        }
-
-        public Intent register(Context context, IntentFilter filter) {
-            isRegistered = true;
-            return context.registerReceiver(this, filter);
-        }
-
-        public boolean unregister(Context context) {
-            if (isRegistered) {
-                context.unregisterReceiver(this);  // edited
-                isRegistered = false;
-                return true;
-            }
-            return false;
-        }
+        });
+        spinnerServers.setAdapter(spinnerAdapter);
     }
 
     class SpinnerAdapter extends ArrayAdapter<ServiceInfo> implements android.widget.SpinnerAdapter{
@@ -223,16 +200,6 @@ public class ActivityScales extends Activity implements View.OnClickListener{
             ServiceInfo s = getItem(position);
             TextView label=(TextView)view.findViewById(R.id.text1);
             label.setText(s.getName());
-            /*View view = convertView;
-
-            if (view == null) {
-                LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-                view = layoutInflater.inflate(R.layout.type_spinner, parent, false);
-            }
-
-            ServiceInfo s = getItem(position);
-            TextView textView = (TextView) view.findViewById(R.id.text1);
-            textView.setText(s.getName());*/
 
             return view;
         }
@@ -253,7 +220,7 @@ public class ActivityScales extends Activity implements View.OnClickListener{
             View row=inflater.inflate(R.layout.type_spinner_dropdown_item, parent, false);
             ServiceInfo s = getItem(position);
             TextView label=(TextView)row.findViewById(R.id.text1);
-            label.setText(s.getName());
+            label.setText(s.getName()+" "+s.getPropertyString(DataTransferringManager.SERVICE_INFO_PROPERTY_IP_VERSION));
             /*TextView sub=(TextView)row.findViewById(R.id.sub);
             sub.setText(subs[position]);
 
@@ -262,8 +229,61 @@ public class ActivityScales extends Activity implements View.OnClickListener{
             return row;
         }
 
-
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+        }
     }
 
+    class BaseReceiver extends BroadcastReceiver{
+        Context mContext;
+        final IntentFilter intentFilter;
+        protected boolean isRegistered;
+
+        BaseReceiver(Context context){
+            mContext = context;
+            intentFilter = new IntentFilter(ACTION_UPDATE_SERVER_LIST);
+            intentFilter.addAction(ACTION_WEIGHT);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                switch (action){
+                    case ACTION_UPDATE_SERVER_LIST:
+                        if (spinnerAdapter!= null)
+                            spinnerAdapter.notifyDataSetChanged();
+                    break;
+                    case ACTION_WEIGHT:
+                        String weight = intent.getStringExtra("weight");
+                        weight.trim();
+                        try {
+                            weight = weight.substring(0,weight.indexOf("("));
+                            SpannableStringBuilder spannableWeightText = new SpannableStringBuilder(weight);
+                            spannableWeightText.setSpan(new TextAppearanceSpan(ActivityScales.this, R.style.SpanTextWeight),0,weight.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                            spannableWeightText.append(textKg);
+                            textViewWeight.setText(spannableWeightText, TextView.BufferType.SPANNABLE);
+                        }catch (Exception e){}
+                   break;
+                    default:
+                }
+            }
+        }
+
+        public void register() {
+            if (!isRegistered){
+                isRegistered = true;
+                mContext.registerReceiver(this, intentFilter);
+            }
+        }
+
+        public void unregister() {
+            if (isRegistered) {
+                mContext.unregisterReceiver(this);  // edited
+                isRegistered = false;
+            }
+        }
+    }
 
 }

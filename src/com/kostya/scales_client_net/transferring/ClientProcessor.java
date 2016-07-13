@@ -2,6 +2,7 @@ package com.kostya.scales_client_net.transferring;
 
 import android.content.Context;
 import android.util.Log;
+import com.kostya.serializable.CommandObject;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -12,45 +13,37 @@ public class ClientProcessor {
     private Socket socket;
     private String textForSend;
     private final Context context;
-    private final String serverIpAddress;
+    private final String ipAddress;
+    private static final int TIME_OUT_CONNECT = 2000; /** Время в милисекундах. */
     private static  final String TAG = "ClientProcess";
 
-    public ClientProcessor(String textForSend, String serverIpAddress, Context context) {
-        this.context = context;
-        this.serverIpAddress = serverIpAddress;
+    public ClientProcessor(String textForSend, String ipAddress, Context context) {
+        this(ipAddress,context);
         sendSimpleMessageToOtherDevice(textForSend);
     }
 
-    public ClientProcessor(String serverIpAddress, Context context) {
+    public ClientProcessor(String ipAddress, Context context) {
         this.context = context;
-        this.serverIpAddress = serverIpAddress;
+        this.ipAddress = ipAddress;
     }
 
-    public ClientProcessor(Object object, String serverIpAddress, Context context) {
-        this.context = context;
-        this.serverIpAddress = serverIpAddress;
+    public ClientProcessor(Object object, String ipAddress, Context context) {
+        this(ipAddress,context);
         sendSimpleObjectToOtherDevice(object);
     }
 
-    private Socket getSocket(String serverIpAddress) {
-        try {
-            InetAddress serverAddress = InetAddress.getByName(serverIpAddress);
-            socket = new Socket();
-            socket.connect(new InetSocketAddress(serverAddress, ServerSocketProcessorRunnable.SERVER_PORT), 500);
-
-            //socket = new Socket(serverAddress, ServerSocketProcessorRunnable.SERVER_PORT);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
+    public Socket getSocket() throws Exception {
+        InetAddress serverAddress = InetAddress.getByName(ipAddress);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(serverAddress, ServerSocketProcessorRunnable.SERVER_PORT), TIME_OUT_CONNECT);
         return socket;
     }
 
-    private void closeSocket(Socket socket) {
+    public void closeSocket() {
         try {
             if (socket != null && !socket.isClosed())
                 socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -59,7 +52,7 @@ public class ClientProcessor {
 
     public void sendTextToOtherDevice() {
         try {
-            socket = getSocket(serverIpAddress);
+            socket = getSocket();
 
             PrintWriter output = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
             output.println("MESSAGE FROM CLIENT");
@@ -78,13 +71,13 @@ public class ClientProcessor {
             Log.i(TAG,e.getMessage());
 
         } finally {
-            closeSocket(socket);
+            closeSocket();
         }
     }
 
     public void sendSimpleMessageToOtherDevice(String message) {
         try {
-            socket = getSocket(serverIpAddress);
+            socket = getSocket();
 
             PrintWriter output = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
             output.println(message);
@@ -102,13 +95,13 @@ public class ClientProcessor {
             Log.i(TAG,e.getMessage());
 
         } finally {
-            closeSocket(socket);
+            closeSocket();
         }
     }
 
     public void sendSimpleObjectToOtherDevice(Object object) {
         try {
-            socket = getSocket(serverIpAddress);
+            socket = getSocket();
 
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             out.writeObject(object);
@@ -121,7 +114,30 @@ public class ClientProcessor {
             Log.i(TAG,e.getMessage());
 
         } finally {
-            closeSocket(socket);
+            closeSocket();
+        }
+    }
+
+    public void sendObjectOutputInputToDevice(Object object) {
+        try {
+            socket = getSocket();
+
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            objectOutputStream.writeObject(object);
+
+            //ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+            Object obj = ((CommandObject)object).readObject(socket);
+            ((CommandObject)obj).execute(context);
+            //objectInputStream.close();
+            objectOutputStream.close();
+            socket.close();
+
+        } catch (Exception e) {
+            //// TODO: 09.07.2016
+            Log.i(TAG,e.getMessage());
+
+        } finally {
+            closeSocket();
         }
     }
 }

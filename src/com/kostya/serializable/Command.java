@@ -38,7 +38,7 @@ public class Command{
             String sub = inputLine.replace(cmd.name(), "");
             cmd.prepare("");
             if (sub.isEmpty())
-                cmd.prepare(cmd.fetch(mContext));
+                cmd.prepare((String) cmd.fetch(mContext));
             else
                 cmd.setup(mContext, sub);
             return cmd;

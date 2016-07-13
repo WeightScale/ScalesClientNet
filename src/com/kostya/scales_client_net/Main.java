@@ -33,13 +33,13 @@ public class Main extends Application {
             deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         }
         /** Для передачи данных относящихся для весов. */
-        dataTransferring = new DataTransferringManager(DataTransferringManager.SERVICE_INFO_TYPE_SCALES);
+        dataTransferring = new DataTransferringManager(getApplicationContext(),DataTransferringManager.SERVICE_INFO_TYPE_SCALES);
         startService(new Intent(this,ServiceScalesNet.class));
     }
 
     public DataTransferringManager getDataTransferring() {
         if (dataTransferring == null)
-            dataTransferring = new DataTransferringManager(DataTransferringManager.SERVICE_INFO_TYPE_SCALES);
+            dataTransferring = new DataTransferringManager(getApplicationContext(),DataTransferringManager.SERVICE_INFO_TYPE_SCALES);
         return dataTransferring;
     }
 
