@@ -57,6 +57,27 @@ public class CommandObject implements Serializable {
         //return null;
     }
 
+    public void sendToDeviceInNetwork(final Context context, String ipAddress){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ClientProcessor clientProcessor = new ClientProcessor(ipAddress, context);
+                try {
+                    Socket socket = clientProcessor.getSocket();
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                    objectOutputStream.writeObject(CommandObject.this);
+                    objectOutputStream.close();
+                    socket.close();
+                    //clientProcessor.sendObjectOutputInputToDevice(CommandObject.this);
+                } catch (Exception e) {
+                    clientProcessor.closeSocket();
+                }finally{
+                    clientProcessor.closeSocket();
+                }
+            }
+        }).start();
+    }
+
     public void getObjectFromDeviceInNetwork(final Context context, String ipAddress){
         new Thread(new Runnable() {
             @Override

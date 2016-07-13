@@ -43,6 +43,7 @@ public class DataTransferringManager {
     private ServiceInfo serviceInfo;
     private MulticastLock multiCastLock;
     private final JmDnsServerThreadProcessor serverThreadProcessor = new JmDnsServerThreadProcessor();
+    private ClientThreadProcess clientThreadProcess;
     private final String serviceType;
     private boolean registered;
 
@@ -118,6 +119,10 @@ public class DataTransferringManager {
         }
     }
 
+    public ClientThreadProcess getClientThreadProcess() {return clientThreadProcess;}
+
+    public void setClientThreadProcess(ClientThreadProcess clientThreadProcess) {this.clientThreadProcess = clientThreadProcess;}
+
     public void registerService(){
         if (jmdns != null)
             try {
@@ -190,7 +195,7 @@ public class DataTransferringManager {
         return jmdns;
     }
 
-    private String getIPv4FromServiceInfo(ServiceInfo serviceInfo) {
+    public String getIPv4FromServiceInfo(ServiceInfo serviceInfo) {
         return serviceInfo.getPropertyString(SERVICE_INFO_PROPERTY_IP_VERSION);
     }
 

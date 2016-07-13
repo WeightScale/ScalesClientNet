@@ -1,4 +1,4 @@
-package com.kostya.scales_client_net.transferring;
+package com.kostya.scales_client_net;
 
 import android.content.Context;
 import android.graphics.Canvas;

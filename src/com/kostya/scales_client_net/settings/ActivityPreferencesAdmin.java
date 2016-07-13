@@ -32,6 +32,7 @@ import com.kostya.scales_client_net.provider.SenderTable;
 import com.kostya.scales_client_net.provider.SystemTable;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
 import com.kostya.scales_client_net.transferring.DataTransferringManager;
+import com.kostya.serializable.ComPortObject;
 import com.kostya.serializable.Command;
 import com.kostya.serializable.CommandObject;
 import com.kostya.serializable.Commands;
@@ -51,15 +52,18 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
     private static SystemTable systemTable;
     private EditText input;
     public static Intent intent;
+    public static ComPortObject comPortObject = new ComPortObject();
 
     private static final int FILE_SELECT_CODE = 10;
     private static final int REQUEST_ENABLE_BLUETOOTH = 2;
-    private static boolean flag_restore;
+    private static boolean flag_restore, flag_com;
     private static final String TAG = ActivityPreferencesAdmin.class.getName();
     private static final String superCode = "343434";
     public static final String ACTION_PREFERENCE_ADMIN = "com.kostya.scales_client_net.settings.ACTION_PREFERENCE_ADMIN";
+    public static final String ACTION_COM_PORT = "com.kostya.scales_client_net.settings.ACTION_COM_PORT";
     public static final String EXTRA_BUNDLE_WIFI = "com.kostya.scales_client_net.settings.EXTRA_BUNDLE_WIFI";
     public static final String EXTRA_BUNDLE_USB = "com.kostya.scales_client_net.settings.EXTRA_BUNDLE_USB";
+    public static final String EXTRA_BUNDLE_COM_PORT = "com.kostya.scales_client_net.settings.EXTRA_BUNDLE_COM_PORT";
     public static final String KEY_SSID = "com.kostya.scales_client_net.settings.KEY_SSID";
     public static final String KEY_PASS = "com.kostya.scales_client_net.settings.KEY_PASS";
 
@@ -74,13 +78,10 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-
-                        if(systemTable.updateEntry(SystemTable.Name.SPEED_PORT, o.toString())){
-                            name.setTitle("Скорость: " + o);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            return flag_restore = true;
-                        }
-                        return false;
+                        comPortObject.setSpeed(Integer.valueOf(o.toString()));
+                        name.setTitle("Скорость: " + o);
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
+                        return flag_com = true;
                     }
                 });
             }
@@ -96,13 +97,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-                        if(systemTable.updateEntry(SystemTable.Name.FRAME_PORT, o.toString())){
-                            ((ListPreference)name).setValue(o.toString());
-                            name.setTitle("Формат: " + o);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            return  true;
-                        }
-                        return false;
+                        comPortObject.setDataBits(ComPortObject.usbProperties.get(o.toString()));
+                        ((ListPreference)name).setValue(o.toString());
+                        name.setTitle("Формат: " + o);
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
+                        return  flag_com = true;
                     }
                 });
             }
@@ -117,14 +116,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-
-                        if(systemTable.updateEntry(SystemTable.Name.PARITY_BIT, o.toString())){
-                            ((ListPreference)name).setValue(o.toString());
-                            name.setTitle("Бит четности: " + o);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            return flag_restore = true;
-                        }
-                        return false;
+                        comPortObject.setParity(ComPortObject.usbProperties.get(o.toString()));
+                        ((ListPreference)name).setValue(o.toString());
+                        name.setTitle("Бит четности: " + o);
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
+                        return flag_com = true;
                     }
                 });
             }
@@ -139,14 +135,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-                        name.setTitle("Стоп бит: " + o);
+                        comPortObject.setStopBits(ComPortObject.usbProperties.get(o.toString()));
                         ((ListPreference)name).setValue(o.toString());
-                        if (systemTable.updateEntry(SystemTable.Name.STOP_BIT, o.toString())){
-                            name.setTitle("Стоп бит: " + o);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            return flag_restore = true;
-                        }
-                        return false;
+                        name.setTitle("Стоп бит: " + o);
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
+                        return flag_com = true;
                     }
                 });
             }
@@ -161,14 +154,11 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
                 name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                     @Override
                     public boolean onPreferenceChange(Preference preference, Object o) {
-
+                        comPortObject.setFlowControl(ComPortObject.usbProperties.get(o.toString()));
                         ((ListPreference)name).setValue(o.toString());
-                        if (systemTable.updateEntry(SystemTable.Name.FLOW_CONTROL, o.toString())){
-                            name.setTitle("Флов контроль: " + o);
-                            Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
-                            return flag_restore = true;
-                        }
-                        return false;
+                        name.setTitle("Флов контроль: " + o);
+                        Toast.makeText(mContext, mContext.getString(R.string.preferences_yes)+' '+ o.toString(), Toast.LENGTH_SHORT).show();
+                        return flag_com = true;
                     }
                 });
             }
@@ -272,8 +262,10 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
 
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
-                        DataTransferringManager dataTransferringManager = Main.getInstance().getDataTransferring();
-
+                        comPortObject = Globals.getInstance().getCurrentTerminal().getComPortObject();
+                        if (comPortObject!= null){
+                            name.setEnabled(true);
+                        }
                         return false;
                     }
                 });
@@ -783,6 +775,10 @@ public class ActivityPreferencesAdmin extends PreferenceActivity  {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (flag_com){
+            intent.putExtra(EXTRA_BUNDLE_COM_PORT, comPortObject);
+            flag_restore = true;
+        }
         if (flag_restore){
             intent.setClass(this,ServiceScalesNet.class).setAction(ACTION_PREFERENCE_ADMIN);
             startService(intent);

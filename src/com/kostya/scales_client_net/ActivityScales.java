@@ -17,7 +17,11 @@ import android.view.*;
 import android.widget.*;
 import com.kostya.scales_client_net.service.ServiceScalesNet;
 import com.kostya.scales_client_net.settings.ActivityPreferences;
+import com.kostya.scales_client_net.transferring.ClientProcessor;
+import com.kostya.scales_client_net.transferring.ClientThreadProcess;
 import com.kostya.scales_client_net.transferring.DataTransferringManager;
+import com.kostya.serializable.CommandObject;
+import com.kostya.serializable.Commands;
 
 import javax.jmdns.ServiceInfo;
 import java.util.List;
@@ -32,6 +36,7 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     private SpinnerAdapter spinnerAdapter;
     private BaseReceiver baseReceiver;
     private SpannableStringBuilder textKg;
+    private DataTransferringManager dataTransferringManager;
     private static final int FILE_SELECT_CODE = 10;
     private static  final String TAG = ActivityScales.class.getName();
     public static final String ACTION_WEIGHT = "com.kostya.scales_client_net.WEIGHT";
@@ -41,6 +46,8 @@ public class ActivityScales extends Activity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        dataTransferringManager = Main.getInstance().getDataTransferring();
 
         buttonBack = (ImageView)findViewById(R.id.buttonBack);
         buttonBack.setOnClickListener(this);
@@ -177,6 +184,11 @@ public class ActivityScales extends Activity implements View.OnClickListener{
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 ServiceInfo serviceInfo = (ServiceInfo) adapterView.getItemAtPosition(i);
                 Main.getInstance().getDataTransferring().setCurrentServer(serviceInfo);
+                CommandObject commandObject = new CommandObject(Commands.CMD_DEFAULT_TERMINAL);
+                String ip = Main.getInstance().getDataTransferring().getIPv4FromServiceInfo(serviceInfo);
+                commandObject.getObjectFromDeviceInNetwork(getApplicationContext(), ip);
+                dataTransferringManager.setClientThreadProcess(new ClientThreadProcess(getApplicationContext(), ip));
+                new Thread(dataTransferringManager.getClientThreadProcess()).start();
             }
 
             @Override

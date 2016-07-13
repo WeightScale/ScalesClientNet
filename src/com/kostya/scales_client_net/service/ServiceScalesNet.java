@@ -22,15 +22,14 @@ import android.util.Log;
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 import com.felhr.usbserial.UsbSerialInterface.UsbReadCallback;
-import com.kostya.scales_client_net.ActivityScales;
-import com.kostya.scales_client_net.Main;
-import com.kostya.scales_client_net.R;
-import com.kostya.scales_client_net.WifiBaseManager;
+import com.kostya.scales_client_net.*;
 import com.kostya.scales_client_net.provider.EventsTable;
 import com.kostya.scales_client_net.provider.SystemTable;
 import com.kostya.scales_client_net.settings.ActivityPreferencesAdmin;
 import com.kostya.scales_client_net.transferring.DataTransferringManager;
 import com.kostya.serializable.ComPortObject;
+import com.kostya.serializable.CommandObject;
+import com.kostya.serializable.Commands;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -108,6 +107,12 @@ public class ServiceScalesNet extends Service{
                             }
                         }
                         return START_REDELIVER_INTENT;
+                    }
+                    ComPortObject com = (ComPortObject) intent.getSerializableExtra(ActivityPreferencesAdmin.EXTRA_BUNDLE_COM_PORT);
+                    if (com != null){
+                        Globals.getInstance().getCurrentTerminal().setComPortObject(com);
+                        //CommandObject commandObject = new CommandObject(Commands.CMD_DEFAULT_TERMINAL, Globals.getInstance().getCurrentTerminal());
+                        //commandObject.sendToDeviceInNetwork(getApplicationContext(), );
                     }
                     break;
                 default:
